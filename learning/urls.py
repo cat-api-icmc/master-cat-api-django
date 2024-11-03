@@ -5,9 +5,9 @@ from .views import *
 
 
 router = routers.DefaultRouter()
-router.register(r'assessment', AssessmentViewset, basename='assessment')
-router.register(r'user-assessment', UserAssessmentViewset, basename='user-assessment')
+router.register(r"assessment", AssessmentViewset, basename="assessment")
+router.register(r"user-assessment", UserAssessmentViewset, basename="user-assessment")
 
 urlpatterns = [
-    path(r'api/', include(router.urls)),
+    path(r"api/", include(router.urls)),
 ]

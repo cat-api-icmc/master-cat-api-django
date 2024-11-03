@@ -39,15 +39,16 @@ class SoftDeletableManagerMixin(object):
     Manager that limits the queryset by default to show only not removed
     instances of model.
     """
+
     _queryset_class = SoftDeletableQuerySet
 
     def get_queryset(self):
         """
         Return queryset limited to not removed entries.
         """
-        kwargs = {'model': self.model, 'using': self._db}
-        if hasattr(self, '_hints'):
-            kwargs['hints'] = self._hints
+        kwargs = {"model": self.model, "using": self._db}
+        if hasattr(self, "_hints"):
+            kwargs["hints"] = self._hints
 
         return self._queryset_class(**kwargs).filter(removed=None)
 
@@ -56,12 +57,9 @@ class SoftDeletableManager(SoftDeletableManagerMixin, models.Manager):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        select_related = getattr(self.model.Meta, 'select_related_default', None)
-        if select_related is not None:
-            qs = qs.select_related(*select_related)
+        select_related = getattr(self.model.Meta, "select_related_default", None)
+        return qs if select_related is None else qs.select_related(*select_related)
 
-        return qs
-   
 
 class SoftDeletableUserManager(SoftDeletableManager, UserManager):
     pass

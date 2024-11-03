@@ -3,11 +3,11 @@ from typing_extensions import Tuple
 
 
 class Endpoints(object):
-    HEALTH_CHECK = 'hc'
-    START_ASSESSEMENT = 'start-assessment'
-    NEXT_ITEM = 'next-item'
-    GET_DESIGN_DATA = 'get-design-data'
-    
+    HEALTH_CHECK = "hc"
+    START_ASSESSEMENT = "start-assessment"
+    NEXT_ITEM = "next-item"
+    GET_DESIGN_DATA = "get-design-data"
+
 
 class PlumberClient(object):
 
@@ -20,32 +20,29 @@ class PlumberClient(object):
             response.raise_for_status()
             return True, response.json()
         except:
-            return False, { 'status': 'Unhealthy!' }
-    
-    def start_assesment(self, questions: list, theta: float = 0.1) -> dict:
-        payload = { 
-            'questions': questions,
-            'pattern_theta': theta,
-        }
+            return False, {"status": "Unhealthy!"}
+
+    def start_assesment(self, questions: list, assessment_config: dict) -> dict:
+        payload = {"questions": questions, "config": assessment_config}
         response = self.base.make_request(
-            Endpoints.START_ASSESSEMENT, method='POST', body=payload
+            Endpoints.START_ASSESSEMENT, method="POST", body=payload
         )
         return response.json()
 
     def next_item(self, answer: bool, previous_index: int, encoded_design: str) -> dict:
-        payload = { 
-            'answer': answer,
-            'previous_index': previous_index,
-            'design': encoded_design, 
+        payload = {
+            "answer": answer,
+            "previous_index": previous_index,
+            "design": encoded_design,
         }
         response = self.base.make_request(
-            Endpoints.NEXT_ITEM, method='POST', body=payload
+            Endpoints.NEXT_ITEM, method="POST", body=payload
         )
         return response.json()
-    
+
     def get_design_data(self, encoded_design: str) -> dict:
-        payload = { 'design': encoded_design }
+        payload = {"design": encoded_design}
         response = self.base.make_request(
-            Endpoints.GET_DESIGN_DATA, method='POST', body=payload
+            Endpoints.GET_DESIGN_DATA, method="POST", body=payload
         )
         return response.json()

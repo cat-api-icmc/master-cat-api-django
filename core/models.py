@@ -17,8 +17,9 @@ class TimeStampedModel(models.Model):
     ``created`` and ``modified`` fields.
     ...
     """
-    created = AutoCreatedField(_('created'))
-    modified = AutoLastModifiedField(_('modified'))
+
+    created = AutoCreatedField(_("created"))
+    modified = AutoLastModifiedField(_("modified"))
 
     class Meta:
         abstract = True
@@ -33,10 +34,12 @@ class ChangedModel(models.Model):
         super(ChangedModel, self).__init__(*args, **kwargs)
         self.__initial = self._dict
 
-    @property
-    def cache_key(self):
-        key = self.uuid if self.uuid else self.pk
-        return "{0}:{1}".format(type(self).__name__.lower(), key)
+    def save_fields(self, **kwargs):
+        _keys = kwargs.keys()
+        for field in _keys:
+            setattr(self, field, kwargs[field])
+        self.save(update_fields=_keys)
+        return self
 
     @property
     def diff(self):
@@ -71,15 +74,18 @@ class ChangedModel(models.Model):
 
     @property
     def _dict(self):
-        return model_to_dict(self, fields=[field.name for field in
-                                           self._meta.fields])
-    
+        return model_to_dict(self, fields=[field.name for field in self._meta.fields])
+
     @property
     def get_admin_url(self):
         from django.urls import reverse
         from django.contrib.contenttypes.models import ContentType
+
         content_type = ContentType.objects.get_for_model(self.__class__)
-        return reverse("admin:%s_%s_change" % (content_type.app_label, content_type.model), args=(self.id,))
+        return reverse(
+            "admin:%s_%s_change" % (content_type.app_label, content_type.model),
+            args=(self.id,),
+        )
 
 
 class SoftDeletableModel(ChangedModel, TimeStampedModel):
@@ -89,9 +95,10 @@ class SoftDeletableModel(ChangedModel, TimeStampedModel):
     kept in db for any reason.
     Default manager returns only not-removed entries.
     """
+
     removed = models.DateTimeField(null=True, default=None, editable=False)
 
-    objects = SoftDeletableManager()    
+    objects = SoftDeletableManager()
     all_objects = models.Manager()
 
     class Meta:
@@ -132,55 +139,60 @@ class CKEditorModelMixin(object):
 
     @classmethod
     def get_ck_editor_fields(cls):
-        return [field.name for field in cls._meta.fields if isinstance(field, CKEditor5Field)]
-    
+        return [
+            field.name
+            for field in cls._meta.fields
+            if isinstance(field, CKEditor5Field)
+        ]
+
     def convert_images_to_base64(self, field):
         import os
         import base64
         import urllib
         from bs4 import BeautifulSoup
         from pathlib import Path
-        
+
         content = getattr(self, field)
-        
-        soup = BeautifulSoup(content, 'html.parser')
-        images = soup.find_all('img')
-        
+
+        soup = BeautifulSoup(content, "html.parser")
+        images = soup.find_all("img")
+
         for img in images:
-            img_src = img.get('src')
-            if 'media/' in img_src:
+            img_src = img.get("src")
+            if "media/" in img_src:
                 img_path = urllib.parse.unquote(os.getcwd() + img_src)
                 if img_path and Path(img_path).exists():
-                    with open(img_path, 'rb') as image_file:
-                        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
-                        img['src'] = f'data:image;base64,{encoded_string}'
+                    with open(img_path, "rb") as image_file:
+                        encoded_string = base64.b64encode(image_file.read()).decode(
+                            "utf-8"
+                        )
+                        img["src"] = f"data:image;base64,{encoded_string}"
                     os.remove(img_path)
-        
+
         setattr(self, field, str(soup))
-        
+
     def handle_ck_editor_fields(self):
         for field in self._ck_editor_fields:
             self.convert_images_to_base64(field)
 
 
 class UploadQuestions(SoftDeletableModel):
-    PROCESSING = 'processing'
-    FINISHED = 'finished'
-    ERROR = 'error'
-    
+    PROCESSING = "processing"
+    FINISHED = "finished"
+    ERROR = "error"
+
     STATUS_CHOICES = (
-        (PROCESSING, 'Processando'),
-        (FINISHED, 'Finalizado'),
-        (ERROR, 'Erro')
+        (PROCESSING, "Processando"),
+        (FINISHED, "Finalizado"),
+        (ERROR, "Erro"),
     )
-    
+
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=PROCESSING)
-    file = models.FileField(upload_to='upload')
+    file = models.FileField(upload_to="upload")
     result = models.TextField(blank=True, null=True)
 
     class Meta:
-        db_table = 'upload_questions'
-        verbose_name = 'Upload Questões'
-        verbose_name_plural = 'Uploads Questões'
-    
+        db_table = "upload_questions"
+        verbose_name = "Upload Questões"
+        verbose_name_plural = "Uploads Questões"

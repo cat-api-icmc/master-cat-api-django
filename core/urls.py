@@ -5,8 +5,8 @@ from .views import *
 
 
 router = routers.DefaultRouter()
-router.register(r'hc', HealthCheck, basename='health-check')
+router.register(r"hc", HealthCheck, basename="health-check")
 
 urlpatterns = [
-    path(r'api/', include(router.urls)),
+    path(r"api/", include(router.urls)),
 ]
