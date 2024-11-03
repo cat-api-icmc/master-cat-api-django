@@ -44,9 +44,12 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
 
         assessment_config = AssessmentConfigSerializer(assessment).data
 
-        plumb_response = PlumberClient().start_assesment(
+        plumb_code, plumb_response = PlumberClient().start_assesment(
             questions_data, assessment_config
         )
+
+        if plumb_code >= 400:
+            return Response(plumb_response, status=plumb_code)
 
         user_assessment, _ = UserAssessment.objects.update_or_create(
             user_id=request.user.id,

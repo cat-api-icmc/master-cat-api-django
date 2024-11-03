@@ -22,12 +22,12 @@ class PlumberClient(object):
         except:
             return False, {"status": "Unhealthy!"}
 
-    def start_assesment(self, questions: list, assessment_config: dict) -> dict:
+    def start_assesment(self, questions: list, assessment_config: dict) -> tuple:
         payload = {"questions": questions, "config": assessment_config}
         response = self.base.make_request(
             Endpoints.START_ASSESSEMENT, method="POST", body=payload
         )
-        return response.json()
+        return response.status_code, response.json()
 
     def next_item(self, answer: bool, previous_index: int, encoded_design: str) -> dict:
         payload = {

@@ -242,10 +242,16 @@ class AssessmentConfig(models.Model):
     thetas_start = models.CharField(
         "Thetas Iniciais",
         max_length=255,
-        default="-3,3",
+        default="0",
         help_text="Valor inicial de thetas. Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional.",
     )
-
+    pattern_theta = models.CharField(
+        "Padrão de Theta",
+        max_length=255,
+        default="0",
+        help_text="Valor de theta inicial. Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional.",
+    )
+        
     min_items = models.PositiveIntegerField("Mínimo de Itens", default=1)
     max_items = models.PositiveIntegerField("Máximo de Itens", default=10)
     max_time = models.PositiveIntegerField(
@@ -274,6 +280,10 @@ class AssessmentConfig(models.Model):
     @property
     def thetas_start_value(self) -> Union[List[float], float]:
         return self.__get_number_or_list(self.thetas_start)
+    
+    @property
+    def pattern_theta_value(self) -> Union[List[float], float]:
+        return self.__get_number_or_list(self.pattern_theta)
 
 
 class Assessment(SoftDeletableModel, AssessmentConfig):
