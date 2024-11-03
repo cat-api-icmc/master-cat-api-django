@@ -11,7 +11,7 @@ class AssessmentRepository(object):
         return Assessment.objects.filter(
             Q(active=True)
             & Q(Q(start__lte=arrow.now().__str__()) | Q(start__isnull=True))
-            & Q(finish__gte=arrow.now().__str__() | Q(finish__isnull=True))
+            & Q(Q(finish__gte=arrow.now().__str__()) | Q(finish__isnull=True))
         )
 
     @classmethod
