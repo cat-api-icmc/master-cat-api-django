@@ -36,6 +36,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
 
 
 class AssessmentConfigSerializer(serializers.ModelSerializer):
+    start_item = serializers.SerializerMethodField()
     min_sem = serializers.SerializerMethodField()
     delta_thetas = serializers.SerializerMethodField()
     thetas_start = serializers.SerializerMethodField()
@@ -44,6 +45,9 @@ class AssessmentConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assessment
         fields = tuple([field.name for field in AssessmentConfig._meta.fields])
+    
+    def get_start_item(self, obj: AssessmentConfig):
+        return obj.start_item or 'random'
     
     def get_min_sem(self, obj: AssessmentConfig):
         return obj.min_sem_value

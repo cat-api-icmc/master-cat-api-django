@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 
 from learning.services import QuestionPoolService
 from .models import *
@@ -81,10 +82,36 @@ class MirtDesignDataAdmin(admin.ModelAdmin):
                     "response_history",
                     "theta_history",
                     "standard_error_history",
+                    "summary",
                 )
             },
         ),
     )
+    
+    @mark_safe
+    def summary(self, obj):
+        item_history = [(
+            ih, 
+            obj.response_history[ih-1],
+            obj.theta_history[i+1],
+            obj.standard_error_history[i+1],
+        ) for i, ih in enumerate(obj.item_history) if ih != 'NA']
+        return f'''
+        <table>
+            <tr>
+                <th>Item</th>
+                <th>Resposta</th>
+                <th>Theta</th>
+                <th>Erro Padrão</th>
+            </tr>
+            {
+                ''.join([
+                    f'<tr><td>{ih}</td><td>{r}</td><td>{t}</td><td>{se}</td></tr>' 
+                    for ih, r, t, se in item_history
+                ])
+            }
+        </table>
+        '''
 
     def user(self, obj):
         return obj.user_assessment.user.__str__()
@@ -94,3 +121,6 @@ class MirtDesignDataAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, *args, **kwargs):
         return False
+    
+    summary.short_description = "Resumo da Avaliação"
+    summary.allow_tags = True
