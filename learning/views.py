@@ -81,12 +81,20 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
         payload = request.data.copy()
 
         alternative = Alternative.objects.get(uuid=payload.get("alternative"))
+        
+        print(alternative)
+        print(user_assessment)
+        print(user_assessment.next_index)
+        print(user_assessment.design)
 
-        plumb_response = PlumberClient().next_item(
+        plumb_code, plumb_response = PlumberClient().next_item(
             answer=int(alternative.is_correct),
             previous_index=user_assessment.next_index,
             encoded_design=user_assessment.design,
         )
+        
+        if plumb_code >= 400:
+            return Response(plumb_response, status=plumb_code)
 
         user_assessment.next_index = plumb_response.get("next_index", 0)
         user_assessment.design = plumb_response.get("design", None)

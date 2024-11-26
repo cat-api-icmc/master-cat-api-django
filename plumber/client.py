@@ -29,7 +29,7 @@ class PlumberClient(object):
         )
         return response.status_code, response.json()
 
-    def next_item(self, answer: bool, previous_index: int, encoded_design: str) -> dict:
+    def next_item(self, answer: bool, previous_index: int, encoded_design: str) -> tuple:
         payload = {
             "answer": answer,
             "previous_index": previous_index,
@@ -38,7 +38,7 @@ class PlumberClient(object):
         response = self.base.make_request(
             Endpoints.NEXT_ITEM, method="POST", body=payload
         )
-        return response.json()
+        return response.status_code, response.json()
 
     def get_design_data(self, encoded_design: str) -> dict:
         payload = {"design": encoded_design}

@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
+from learning.forms import AssessmentForm
 from learning.services import QuestionPoolService
 from .models import *
 
@@ -62,6 +63,7 @@ class QuestionSuperPoolAdmin(QuestionPoolAdmin):
 
 @admin.register(Assessment)
 class AssessmentAdmin(admin.ModelAdmin):
+    form = AssessmentForm
     list_display = ("name", "id", "uuid", "active", "pool")
     readonly_fields = ("id", "uuid")
     fieldsets = (
