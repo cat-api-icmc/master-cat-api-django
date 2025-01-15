@@ -75,18 +75,19 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
         return Response(data, status=status.HTTP_200_OK)
 
     def update(self, request, uuid=None):
-        user_assessment = UserAssessment.objects.select_related("assessment").get(
-            uuid=uuid
-        )
         payload = request.data.copy()
 
-        alternative = Alternative.objects.get(uuid=payload.get("alternative"))
+        user_assessment = UserAssessment.objects\
+            .select_related("assessment").filter(uuid=uuid).first()
         
-        print(alternative)
-        print(user_assessment)
-        print(user_assessment.next_index)
-        print(user_assessment.design)
-
+        alternative = Alternative.objects.filter(uuid=payload.get("alternative")).first()
+        
+        if not user_assessment or not alternative:
+            return Response(
+                {"error": "User assessment or alternative not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        
         plumb_code, plumb_response = PlumberClient().next_item(
             answer=int(alternative.is_correct),
             previous_index=user_assessment.next_index,
@@ -110,14 +111,14 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
 
             UserAssessmentService.get_design_data(user_assessment)
 
-            payload = {
+            data = {
                 "user_assessment": user_assessment.uuid,
                 "status": UserAssessment.COMPLETED,
                 "next_question": None,
                 **assessment_data,
             }
 
-            return Response(payload, status=status.HTTP_200_OK)
+            return Response(data, status=status.HTTP_200_OK)
 
         user_assessment.save(update_fields=["next_index", "design"])
 
