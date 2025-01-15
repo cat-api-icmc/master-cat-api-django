@@ -35,10 +35,16 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
         return UserAssessmentViewset.objects.filter(user_id=self.request.user.id)
 
     def create(self, request):
-        assessment = Assessment.objects.get(uuid=request.data.get("assessment"))
+        assessment = Assessment.objects.filter(
+            uuid=request.data.get("assessment")).first()
         questions = assessment.pool.questions.all().order_by(
             "questionpoolhasquestion__order"
         )
+        
+        if not assessment:
+            return Response(
+                {"error": "Assessment not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
         questions_data = QuestionPlumberSerializer(questions, many=True).data
 

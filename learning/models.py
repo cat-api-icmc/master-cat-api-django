@@ -364,6 +364,8 @@ class MirtDesignData(SoftDeletableModel):
     standard_error_history = models.JSONField(
         "Histórico de Erro Padrão do Theta", default=list
     )
+    item_time_history = models.JSONField("Histórico de Tempo de Resposta", default=list)
+    last_answer_time = models.DateTimeField("Última Resposta", default=None, null=True)
 
     class Meta:
         db_table = "mirt_design_data"
@@ -393,3 +395,7 @@ class MirtDesignData(SoftDeletableModel):
     @property
     def last_response(self) -> bool:
         return self.__last(self.response_history)
+    
+    @property
+    def last_item_time(self) -> float:
+        return self.__last(self.item_time_history)
