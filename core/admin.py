@@ -29,6 +29,7 @@ class UploadQuestionsAdmin(admin.ModelAdmin):
         EXAMPLES = [
             ("Exemplo JSON", "json/upload-questions-admin-exaple.json", "upload-questions.json"),
             ("Exemplo CSV", "csv/upload-questions-admin-exaple.csv", "upload-questions.csv"),
+            ("Exemplo Moodle", "mdl/upload-questions-admin-exaple.mdl", "upload-questions.mdl"),
         ]
         return f"""
             <div>
