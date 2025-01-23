@@ -1,4 +1,4 @@
-from core.tasks import upload_questions_json, upload_questions_csv
+from core.tasks import upload_questions_json, upload_questions_csv, upload_questions_mdl
 from .models import UploadQuestions
 from django.contrib import admin
 from django.utils.safestring import mark_safe
@@ -10,10 +10,12 @@ class UploadQuestionsAdmin(admin.ModelAdmin):
 
     JSON = "json"
     CSV = "csv"
+    MOODLE = "mdl"
 
     FILE_EXTENSION_MAP = {
         JSON: upload_questions_json,
         CSV: upload_questions_csv,
+        MOODLE: upload_questions_mdl,
     }
 
     def has_change_permission(self, *args, **kwargs):
@@ -49,7 +51,6 @@ class UploadQuestionsAdmin(admin.ModelAdmin):
 
         try:
             count = self.FILE_EXTENSION_MAP[ext](obj.file)
-
             obj.status = UploadQuestions.FINISHED
             obj.result = f"{count} questions uploaded."
         except Exception as e:

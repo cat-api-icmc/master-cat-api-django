@@ -1,0 +1,4 @@
+1 - Esse arquivo deve ser o XML exportado pelo Moodle com as questões que você deseja importar;
+2 - O arquivo deve ser exportado com o formato Moodle XML e deve conter as questões que você deseja importar;
+3 - Você deve só trocar a extensão do arquivo de .xml para .mdl;
+4 - Somente questões do tipo "multichoice" serão importadas.
