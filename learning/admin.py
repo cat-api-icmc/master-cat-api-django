@@ -34,7 +34,7 @@ class QuestionAdmin(admin.ModelAdmin):
 
 class QuestionInline(admin.TabularInline):
     model = QuestionPoolHasQuestion
-    fields = ("question",)
+    fields = ("question", "order")
     extra = 1
 
 
@@ -91,13 +91,25 @@ class MirtDesignDataAdmin(admin.ModelAdmin):
     )
     
     @mark_safe
-    def summary(self, obj):
+    def summary(self, obj: MirtDesignData):
         item_history = [(
             ih, 
             obj.response_history[ih-1],
             obj.theta_history[i+1],
             obj.standard_error_history[i+1],
+            obj.item_time_history[i],
         ) for i, ih in enumerate(obj.item_history) if ih != 'NA']
+        
+        contents = ''.join([f'''
+            <tr>
+                <td>{ih}</td>
+                <td>{r}</td>
+                <td>{t}</td>
+                <td>{se}</td>
+                <td>{it:.2f}</td>
+            </tr>
+        ''' for ih, r, t, se, it in item_history])
+        
         return f'''
         <table>
             <tr>
@@ -105,13 +117,9 @@ class MirtDesignDataAdmin(admin.ModelAdmin):
                 <th>Resposta</th>
                 <th>Theta</th>
                 <th>Erro Padrão</th>
+                <th>Tempo de Resposta (s)</th>
             </tr>
-            {
-                ''.join([
-                    f'<tr><td>{ih}</td><td>{r}</td><td>{t}</td><td>{se}</td></tr>' 
-                    for ih, r, t, se in item_history
-                ])
-            }
+            {contents}
         </table>
         '''
 

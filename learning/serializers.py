@@ -32,7 +32,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Assessment
-        fields = ("id", "name")
+        fields = ("id", "name", "fixed_question_count")
 
 
 class AssessmentConfigSerializer(serializers.ModelSerializer):

@@ -99,7 +99,7 @@ class QuestionPool(SoftDeletableModel):
         return f"{self.pk} {self.name}"
 
     def __len__(self) -> int:
-        return self.questions.count()
+        return self.questions.filter(questionpoolhasquestion__removed__isnull=True).count()
 
 
 class QuestionSuperPool(QuestionPool):
@@ -284,6 +284,10 @@ class AssessmentConfig(models.Model):
     @property
     def pattern_theta_value(self) -> Union[List[float], float]:
         return self.__get_number_or_list(self.pattern_theta)
+    
+    @property
+    def fixed_question_count(self) -> int:
+        return self.min_items if self.min_items == self.max_items else 0
 
 
 class Assessment(SoftDeletableModel, AssessmentConfig):
@@ -317,7 +321,7 @@ class Assessment(SoftDeletableModel, AssessmentConfig):
         return f"{self.pk} {self.name}"
 
     def __len__(self) -> int:
-        return self.pool.questions.count()
+        return self.pool.questions.filter(questionpoolhasquestion__removed__isnull=True).count()
 
 
 class UserAssessment(SoftDeletableModel):
