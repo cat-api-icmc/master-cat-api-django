@@ -196,3 +196,30 @@ class UploadQuestions(SoftDeletableModel):
         db_table = "upload_questions"
         verbose_name = "Upload Questões"
         verbose_name_plural = "Uploads Questões"
+
+
+class MassProcess(SoftDeletableModel):
+    PROCESSING = "processing"
+    FINISHED = "finished"
+    ERROR = "error"
+
+    STATUS_CHOICES = (
+        (PROCESSING, "Processando"),
+        (FINISHED, "Finalizado"),
+        (ERROR, "Erro"),
+    )
+
+    CREATE_USERS = "create_users"
+
+    TYPE_CHOICES = ((CREATE_USERS, "Criar Usuários em Massa"),)
+
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=PROCESSING)
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES)
+    file = models.FileField(upload_to="upload")
+    result = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = "mass_process"
+        verbose_name = "Processo em Massa"
+        verbose_name_plural = "Processos em Massa"

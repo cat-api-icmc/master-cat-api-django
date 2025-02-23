@@ -1,5 +1,10 @@
-from core.tasks import upload_questions_json, upload_questions_csv, upload_questions_mdl
-from .models import UploadQuestions
+from core.tasks import (
+    upload_questions_json,
+    upload_questions_csv,
+    upload_questions_mdl,
+    mass_create_users,
+)
+from .models import MassProcess, UploadQuestions
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
@@ -29,9 +34,21 @@ class UploadQuestionsAdmin(admin.ModelAdmin):
     @mark_safe
     def examples(self, obj):
         EXAMPLES = [
-            ("Exemplo JSON", "json/upload-questions-admin-exaple.json", "upload-questions.json"),
-            ("Exemplo CSV", "csv/upload-questions-admin-exaple.csv", "upload-questions.csv"),
-            ("Exemplo Moodle", "mdl/upload-questions-admin-exaple.mdl", "upload-questions.mdl"),
+            (
+                "Exemplo JSON",
+                "json/upload-questions-admin-exaple.json",
+                "upload-questions.json",
+            ),
+            (
+                "Exemplo CSV",
+                "csv/upload-questions-admin-exaple.csv",
+                "upload-questions.csv",
+            ),
+            (
+                "Exemplo Moodle",
+                "mdl/upload-questions-admin-exaple.mdl",
+                "upload-questions.mdl",
+            ),
         ]
         return f"""
             <div>
@@ -55,6 +72,59 @@ class UploadQuestionsAdmin(admin.ModelAdmin):
             obj.result = f"{count} questions uploaded."
         except Exception as e:
             obj.status = UploadQuestions.ERROR
+            obj.result = str(e)
+        finally:
+            obj.save()
+
+    examples.short_description = "Exemplos"
+    examples.allow_tags = True
+
+
+@admin.register(MassProcess)
+class MassProcessAdmin(admin.ModelAdmin):
+    readonly_fields = ("examples",)
+
+    TASK_MAP = {
+        MassProcess.CREATE_USERS: mass_create_users,
+    }
+
+    def has_change_permission(self, *args, **kwargs):
+        return False
+
+    def get_fieldsets(self, request, obj=None):
+        if obj:
+            return ((None, {"fields": ("uuid", "file", "type", "status", "result")}),)
+        return ((None, {"fields": ("type", "file", "examples")}),)
+
+    @mark_safe
+    def examples(self, obj):
+
+        EXAMPLES = [
+            (f"Exemplo {v}", f"mass-process/{k}.csv", f"{k}.csv")
+            for k, v in MassProcess.TYPE_CHOICES
+        ]
+        return f"""
+            <div>
+                {'<br>'.join([
+                    f'<a href="/static/dev/{path}" download="{file}">{name}</a>' 
+                    for name, path, file in EXAMPLES]
+                )}
+            </div>
+        """
+
+    def save_model(self, request, obj, form, change):
+        name = obj.file.name
+        type = obj.type
+
+        obj.status = MassProcess.PROCESSING
+        obj.save()
+
+        try:
+            count = self.TASK_MAP[type](obj.file)
+            obj.status = MassProcess.FINISHED
+            obj.result = f"{count} objects created."
+        except Exception as e:
+            obj.status = MassProcess.ERROR
             obj.result = str(e)
         finally:
             obj.save()
