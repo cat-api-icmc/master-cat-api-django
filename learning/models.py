@@ -383,6 +383,9 @@ class MirtDesignData(SoftDeletableModel):
 
     def __last(self, iter: list) -> float:
         return iter[-1] if len(iter) else 0.0
+    
+    def __len__(self) -> int:
+        return len(self.item_history)
 
     @property
     def last_theta(self) -> float:

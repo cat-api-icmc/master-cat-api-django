@@ -8,3 +8,4 @@ upload/*.png
 Untitled*
 *.sqlite3
 /media
+/scripts
