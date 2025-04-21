@@ -39,3 +39,15 @@ As avaliações disponíveis são filtradas por ativas e dentro do período de v
     }
     ```
 
+### /api/auth/login/
+- **POST**: Realiza o login do usuário e retorna um token de autenticação.
+    - Body: 
+    ```json
+    {
+        "email": "Email do Usuário",
+        "password": "Senha do Usuário"
+    }
+    ```
+
+### /api/me/
+- **GET**: Retorna os detalhes do usuário autenticado.
