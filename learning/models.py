@@ -99,7 +99,9 @@ class QuestionPool(SoftDeletableModel):
         return f"{self.pk} {self.name}"
 
     def __len__(self) -> int:
-        return self.questions.filter(questionpoolhasquestion__removed__isnull=True).count()
+        return self.questions.filter(
+            questionpoolhasquestion__removed__isnull=True
+        ).count()
 
 
 class QuestionSuperPool(QuestionPool):
@@ -218,7 +220,11 @@ class AssessmentConfig(models.Model):
     )
 
     # Critério de seleção de itens
-    start_item = models.PositiveIntegerField("Item Inicial", default=1, help_text="Caso o índice seja 0, o primeiro item será escolhido aleatoriamente.")
+    start_item = models.PositiveIntegerField(
+        "Item Inicial",
+        default=1,
+        help_text="Caso o índice seja 0, o primeiro item será escolhido aleatoriamente.",
+    )
     criteria = models.CharField(
         "Critério de Seleção",
         max_length=255,
@@ -251,7 +257,7 @@ class AssessmentConfig(models.Model):
         default="0",
         help_text="Valor de theta inicial. Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional.",
     )
-        
+
     min_items = models.PositiveIntegerField("Mínimo de Itens", default=1)
     max_items = models.PositiveIntegerField("Máximo de Itens", default=10)
     max_time = models.PositiveIntegerField(
@@ -280,11 +286,11 @@ class AssessmentConfig(models.Model):
     @property
     def thetas_start_value(self) -> Union[List[float], float]:
         return self.__get_number_or_list(self.thetas_start)
-    
+
     @property
     def pattern_theta_value(self) -> Union[List[float], float]:
         return self.__get_number_or_list(self.pattern_theta)
-    
+
     @property
     def fixed_question_count(self) -> int:
         return self.min_items if self.min_items == self.max_items else 0
@@ -294,6 +300,11 @@ class Assessment(SoftDeletableModel, AssessmentConfig):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True)
     name = models.CharField("Nome", max_length=255)
     active = models.BooleanField("Ativo", default=True)
+    retry = models.BooleanField(
+        "Permitir Repetição",
+        default=False,
+        help_text="Permite que o usuário repita a avaliação caso já tenha finalizado",
+    )
     start = models.DateTimeField(
         "Início",
         default=None,
@@ -321,7 +332,9 @@ class Assessment(SoftDeletableModel, AssessmentConfig):
         return f"{self.pk} {self.name}"
 
     def __len__(self) -> int:
-        return self.pool.questions.filter(questionpoolhasquestion__removed__isnull=True).count()
+        return self.pool.questions.filter(
+            questionpoolhasquestion__removed__isnull=True
+        ).count()
 
 
 class UserAssessment(SoftDeletableModel):
@@ -383,7 +396,7 @@ class MirtDesignData(SoftDeletableModel):
 
     def __last(self, iter: list) -> float:
         return iter[-1] if len(iter) else 0.0
-    
+
     def __len__(self) -> int:
         return len(self.item_history)
 
@@ -402,7 +415,7 @@ class MirtDesignData(SoftDeletableModel):
     @property
     def last_response(self) -> bool:
         return self.__last(self.response_history)
-    
+
     @property
     def last_item_time(self) -> float:
         return self.__last(self.item_time_history)

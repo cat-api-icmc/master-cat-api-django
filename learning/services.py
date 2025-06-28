@@ -1,10 +1,12 @@
 from learning.models import (
+    Assessment,
     QuestionPool,
     UserAssessment,
     MirtDesignData,
     QuestionPoolHasQuestion,
     Question,
 )
+from learning.serializers import AssessmentConfigSerializer, QuestionPlumberSerializer
 from plumber.client import PlumberClient
 
 
@@ -30,6 +32,45 @@ class QuestionPoolService(object):
 
 
 class UserAssessmentService(object):
+
+    @classmethod
+    def get_in_progress_assessment(
+        cls, user_id: int, assessment_id: int
+    ) -> UserAssessment:
+        return UserAssessment.objects.filter(
+            user_id=user_id,
+            assessment_id=assessment_id,
+            status=UserAssessment.IN_PROGRESS,
+        ).first()
+
+    @classmethod
+    def create(
+        cls, user_id: int, assessment: Assessment
+    ) -> tuple[UserAssessment, bool]:
+        questions = assessment.pool.questions.filter(
+            questionpoolhasquestion__removed__isnull=True
+        ).order_by("questionpoolhasquestion__order")
+
+        questions_data = QuestionPlumberSerializer(questions, many=True).data
+
+        assessment_config = AssessmentConfigSerializer(assessment).data
+
+        plumb_code, plumb_response = PlumberClient().start_assesment(
+            questions_data, assessment_config
+        )
+
+        if plumb_code >= 400:
+            return {"data": plumb_response, "status": plumb_code}, False
+
+        user_assessment = UserAssessment.objects.create(
+            user_id=user_id,
+            assessment_id=assessment.id,
+            status=UserAssessment.IN_PROGRESS,
+            next_index=plumb_response.get("next_index", 0),
+            design=plumb_response.get("design", None),
+        )
+
+        return user_assessment, True
 
     @classmethod
     def get_design_data(

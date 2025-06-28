@@ -3,6 +3,7 @@ from django.utils.safestring import mark_safe
 
 from learning.forms import AssessmentForm
 from learning.services import QuestionPoolService
+from user.models import UserPoolHasAssessment
 from .models import *
 
 
@@ -61,15 +62,35 @@ class QuestionSuperPoolAdmin(QuestionPoolAdmin):
         return qs.filter(super_pool=True)
 
 
+class UserPoolHasAssessmentInline(admin.TabularInline):
+    model = UserPoolHasAssessment
+    extra = 1
+
+
 @admin.register(Assessment)
 class AssessmentAdmin(admin.ModelAdmin):
     form = AssessmentForm
     list_display = ("name", "id", "uuid", "active", "pool")
     readonly_fields = ("id", "uuid")
     fieldsets = (
-        (None, {"fields": ("id", "uuid", "name", "active", "start", "finish", "pool")}),
+        (
+            None,
+            {
+                "fields": (
+                    "id",
+                    "uuid",
+                    "name",
+                    "active",
+                    "retry",
+                    "start",
+                    "finish",
+                    "pool",
+                )
+            },
+        ),
         ("Configurações", {"fields": [f.name for f in AssessmentConfig._meta.fields]}),
     )
+    inlines = [UserPoolHasAssessmentInline]
 
 
 @admin.register(MirtDesignData)
@@ -89,18 +110,24 @@ class MirtDesignDataAdmin(admin.ModelAdmin):
             },
         ),
     )
-    
+
     @mark_safe
     def summary(self, obj: MirtDesignData):
-        item_history = [(
-            ih, 
-            obj.response_history[ih-1],
-            obj.theta_history[i+1],
-            obj.standard_error_history[i+1],
-            obj.item_time_history[i],
-        ) for i, ih in enumerate(obj.item_history) if ih != 'NA']
-        
-        contents = ''.join([f'''
+        item_history = [
+            (
+                ih,
+                obj.response_history[ih - 1],
+                obj.theta_history[i + 1],
+                obj.standard_error_history[i + 1],
+                obj.item_time_history[i],
+            )
+            for i, ih in enumerate(obj.item_history)
+            if ih != "NA"
+        ]
+
+        contents = "".join(
+            [
+                f"""
             <tr>
                 <td>{ih}</td>
                 <td>{r}</td>
@@ -108,9 +135,12 @@ class MirtDesignDataAdmin(admin.ModelAdmin):
                 <td>{se}</td>
                 <td>{it:.2f}</td>
             </tr>
-        ''' for ih, r, t, se, it in item_history])
-        
-        return f'''
+        """
+                for ih, r, t, se, it in item_history
+            ]
+        )
+
+        return f"""
         <table>
             <tr>
                 <th>Item</th>
@@ -121,7 +151,7 @@ class MirtDesignDataAdmin(admin.ModelAdmin):
             </tr>
             {contents}
         </table>
-        '''
+        """
 
     def user(self, obj):
         return obj.user_assessment.user.__str__()
@@ -131,6 +161,6 @@ class MirtDesignDataAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, *args, **kwargs):
         return False
-    
+
     summary.short_description = "Resumo da Avaliação"
     summary.allow_tags = True

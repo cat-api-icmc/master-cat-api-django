@@ -1,7 +1,7 @@
 import arrow
-from learning.models import Assessment
+from learning.models import Assessment, UserAssessment
 from user.models import User, UserPoolHasAssessment, UserPoolHasUser
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Exists
 
 
 class AssessmentRepository(object):
@@ -25,4 +25,18 @@ class AssessmentRepository(object):
                 pool_id__in=user_pool_ids
             ).values_list("assessment_id", flat=True)
             qs = qs.filter(id__in=user_assessments)
-        return qs
+
+        user_assessment_in_progress_qs = UserAssessment.objects.filter(
+            user=user, assessment_id=OuterRef("id"), status=UserAssessment.IN_PROGRESS
+        )
+        qs = qs.annotate(in_progress=Exists(user_assessment_in_progress_qs))
+
+        return (
+            qs.filter(Q(retry=True) | Q(in_progress=False))
+            if not user.is_superuser
+            else qs
+        )
+
+    @classmethod
+    def get_user_assessment(cls, user: User, assessment_uuid: str) -> Assessment:
+        return cls.get_user_assessments(user).filter(uuid=assessment_uuid).first()

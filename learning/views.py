@@ -22,8 +22,11 @@ class AssessmentViewset(viewsets.ModelViewSet):
         data = AssessmentSerializer(qs, many=True).data
         return Response(data, status=status.HTTP_200_OK)
 
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
+    def retrieve(self, request, *args, uuid=None, **kwargs):
+        if assessment := AssessmentRepository.get_user_assessment(request.user, uuid):
+            data = AssessmentSerializer(assessment).data
+            return Response(data, status=status.HTTP_200_OK)
+        return Response({}, status=status.HTTP_404_NOT_FOUND)
 
 
 class UserAssessmentViewset(viewsets.ModelViewSet):
@@ -32,77 +35,72 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
     lookup_field = "uuid"
 
     def get_queryset(self):
-        return UserAssessmentViewset.objects.filter(user_id=self.request.user.id)
+        return UserAssessment.objects.filter(user_id=self.request.user.id)
 
     def create(self, request):
         assessment = Assessment.objects.filter(
-            uuid=request.data.get("assessment")).first()
-        
+            uuid=request.data.get("assessment")
+        ).first()
+
         if not assessment:
             return Response(
                 {"error": "Assessment not found."}, status=status.HTTP_404_NOT_FOUND
             )
-        
-        questions = assessment.pool.questions.filter(
-            questionpoolhasquestion__removed__isnull=True
-        ).order_by(
-            "questionpoolhasquestion__order"
+
+        created = False
+        user_assessment = UserAssessmentService.get_in_progress_assessment(
+            request.user.id, assessment.id
         )
 
-        questions_data = QuestionPlumberSerializer(questions, many=True).data
-
-        assessment_config = AssessmentConfigSerializer(assessment).data
-
-        plumb_code, plumb_response = PlumberClient().start_assesment(
-            questions_data, assessment_config
-        )
-
-        if plumb_code >= 400:
-            return Response(plumb_response, status=plumb_code)
-
-        user_assessment, _ = UserAssessment.objects.update_or_create(
-            user_id=request.user.id,
-            assessment_id=assessment.id,
-            defaults=dict(
-                next_index=plumb_response.get("next_index", 0),
-                design=plumb_response.get("design", None),
-            ),
-        )
+        if not user_assessment:
+            user_assessment, success = UserAssessmentService.create(
+                request.user.id, assessment
+            )
+            if not success:
+                return Response(**user_assessment)
+            created = True
 
         next_question = QuestionPoolService.get_next_question(
-            assessment.pool_id, plumb_response.get("next_index")
+            assessment.pool_id, user_assessment.next_index
         )
         assesssment_data: dict = AssessmentSerializer(assessment).data
 
         data = {
             "user_assessment": user_assessment.uuid,
-            "status": UserAssessment.IN_PROGRESS,
+            "status": user_assessment.status,
             "next_question": QuestionSerializer(next_question).data,
             **assesssment_data,
         }
 
-        return Response(data, status=status.HTTP_200_OK)
+        return Response(
+            data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        )
 
     def update(self, request, uuid=None):
         payload = request.data.copy()
 
-        user_assessment = UserAssessment.objects\
-            .select_related("assessment").filter(uuid=uuid).first()
-        
-        alternative = Alternative.objects.filter(uuid=payload.get("alternative")).first()
-        
+        user_assessment = (
+            UserAssessment.objects.select_related("assessment")
+            .filter(uuid=uuid)
+            .first()
+        )
+
+        alternative = Alternative.objects.filter(
+            uuid=payload.get("alternative")
+        ).first()
+
         if not user_assessment or not alternative:
             return Response(
                 {"error": "User assessment or alternative not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        
+
         plumb_code, plumb_response = PlumberClient().next_item(
             answer=int(alternative.is_correct),
             previous_index=user_assessment.next_index,
             encoded_design=user_assessment.design,
         )
-        
+
         if plumb_code >= 400:
             return Response(plumb_response, status=plumb_code)
 
@@ -122,7 +120,7 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
 
             data = {
                 "user_assessment": user_assessment.uuid,
-                "status": UserAssessment.COMPLETED,
+                "status": user_assessment.status,
                 "next_question": None,
                 **assessment_data,
             }
@@ -142,7 +140,7 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
 
         data = {
             "user_assessment": user_assessment.uuid,
-            "status": UserAssessment.IN_PROGRESS,
+            "status": user_assessment.status,
             "next_question": QuestionSerializer(next_question).data,
             **assessment_data,
         }
