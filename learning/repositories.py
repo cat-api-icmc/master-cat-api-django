@@ -1,5 +1,10 @@
 import arrow
-from learning.models import Assessment, UserAssessment
+from learning.models import (
+    Assessment,
+    UserAssessment,
+    MirtDesignData,
+    QuestionPoolHasQuestion,
+)
 from user.models import User, UserPoolHasAssessment, UserPoolHasUser
 from django.db.models import Q, OuterRef, Exists
 
@@ -40,3 +45,18 @@ class AssessmentRepository(object):
     @classmethod
     def get_user_assessment(cls, user: User, assessment_uuid: str) -> Assessment:
         return cls.get_user_assessments(user).filter(uuid=assessment_uuid).first()
+
+
+class MirtDesignDataRepository(object):
+
+    @classmethod
+    def designs_by_assessment(cls, assessment_id: int):
+        return MirtDesignData.objects.select_related(
+            "user_assessment", "user_assessment__user"
+        ).filter(user_assessment__assessment_id=assessment_id)
+
+    @classmethod
+    def designs_by_user(cls, user_id: int):
+        return MirtDesignData.objects.select_related("user_assessment").filter(
+            user_assessment__user_id=user_id
+        )

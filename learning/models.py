@@ -5,6 +5,7 @@ from django_ckeditor_5.fields import CKEditor5Field
 
 from core.models import CKEditorModelMixin, SoftDeletableModel
 from user.models import StudentUser
+from datetime import timedelta
 
 
 class IRTParams(models.Model):
@@ -364,6 +365,13 @@ class UserAssessment(SoftDeletableModel):
         db_table = "user_has_assessments"
         verbose_name = "Avaliação do Usuário"
         verbose_name_plural = "Avaliações dos Usuários"
+        
+    @property
+    def completion_time(self) -> int:
+        if self.finished and self.created:
+            delta: timedelta = self.finished - self.created
+            return int(delta.total_seconds())
+        return 0
 
 
 class MirtDesignData(SoftDeletableModel):
@@ -399,6 +407,10 @@ class MirtDesignData(SoftDeletableModel):
 
     def __len__(self) -> int:
         return len(self.item_history)
+    
+    @property
+    def score(self) -> float:
+        return sum(self.response_history) / len(self.response_history)
 
     @property
     def last_theta(self) -> float:
