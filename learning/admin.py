@@ -71,7 +71,7 @@ class UserPoolHasAssessmentInline(admin.TabularInline):
 class AssessmentAdmin(admin.ModelAdmin):
     form = AssessmentForm
     list_display = ("name", "id", "uuid", "active", "pool")
-    readonly_fields = ("id", "uuid")
+    readonly_fields = ("id", "uuid", "dashboards")
     fieldsets = (
         (
             None,
@@ -85,12 +85,24 @@ class AssessmentAdmin(admin.ModelAdmin):
                     "start",
                     "finish",
                     "pool",
+                    "dashboards",
                 )
             },
         ),
         ("Configurações", {"fields": [f.name for f in AssessmentConfig._meta.fields]}),
     )
     inlines = [UserPoolHasAssessmentInline]
+
+    @mark_safe
+    def dashboards(self, obj):
+        return f"""
+            <div>
+                <a href="/data/assessment/{obj.uuid}/result">Resultados</a>
+            </div>
+        """
+
+    dashboards.short_description = "Dashboards"
+    dashboards.allow_tags = True
 
 
 @admin.register(MirtDesignData)

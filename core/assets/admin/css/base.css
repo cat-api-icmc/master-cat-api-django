@@ -5,9 +5,9 @@
 /* VARIABLE DEFINITIONS */
 html[data-theme="light"],
 :root {
-    --primary: #79aec8;
-    --secondary: #417690;
-    --accent: #f5dd5d;
+    --primary: #5a56b9;
+    --secondary: #312da8;
+    --accent: #d5d5ed;
     --primary-fg: #fff;
 
     --body-fg: #333;
@@ -15,7 +15,7 @@ html[data-theme="light"],
     --body-quiet-color: #666;
     --body-loud-color: #000;
 
-    --header-color: #ffc;
+    --header-color: var(--accent);
     --header-branding-color: var(--accent);
     --header-bg: var(--secondary);
     --header-link-color: var(--primary-fg);
@@ -39,7 +39,7 @@ html[data-theme="light"],
 
     --darkened-bg: #f8f8f8; /* A bit darker than --body-bg */
     --selected-bg: #e4e4e4; /* E.g. selected table cells */
-    --selected-row: #ffc;
+    --selected-row: var(--accent);
 
     --button-fg: #fff;
     --button-bg: var(--primary);
@@ -938,7 +938,7 @@ a.deletelink:focus, a.deletelink:hover {
     padding: 0;
     margin: 0;
     margin-inline-end: 20px;
-    font-weight: 300;
+    font-weight: 700;
     font-size: 1.5rem;
     color: var(--header-branding-color);
 }

@@ -13,6 +13,7 @@ from config.base import DEBUG
 
 APP_URLS = [
     path('', include('core.urls')),
+    path('data/', include('data.urls')),
     path('', include('learning.urls')),
     path('', include('user.urls')),
 ]

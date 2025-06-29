@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assessment Result</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        padding: 0;
+        font-family: Open-Sans, Helvetica, Sans-Serif;
+        width: 100vw;
+      }
+
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        box-shadow: #0003 0px 0px 10px;
+        gap: 2rem;
+      }
+
+      main {
+        display: flex;
+        padding: 1rem;
+      }
+
+      .assessment-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #312da8;
+      }
+
+      .nav-end {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        visible: hidden;
+      }
+
+      .nav-end-item {
+        color: #6b7280;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+          cursor: pointer;
+        }
+      }
+
+      @media print {
+        .nav-end {
+          visibility: hidden;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <span class="assessment-name">{{assessment_name}}</span>
+      <div class="nav-end">
+        <span class="nav-end-item" onclick="print()">Baixar</span>
+        <a
+          class="nav-end-item"
+          href="/admin/learning/assessment/{{assessment_id}}/change"
+          >Voltar</a
+        >
+      </div>
+    </nav>
+    <main></main>
+  </body>
+</html>

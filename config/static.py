@@ -17,3 +17,19 @@ if env('DEBUG', default=False, cast=bool):
 else:
     MEDIA_ROOT = path.join(BASE_DIR, 'core', 'media')
     STATIC_ROOT = path.join(BASE_DIR,  'core', 'assets')
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [f'{BASE_DIR}/templates'],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
