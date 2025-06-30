@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from learning.models import Assessment, QuestionPoolHasQuestion, UserAssessment
 from learning.repositories import MirtDesignDataRepository
 
-# plt.switch_backend("agg")
+plt.switch_backend("agg")
 
 CHART_RATIO = 16, 9
 DPI = 120
@@ -67,6 +67,18 @@ class AssessmentResultDataExtractor(BaseDataExtractor):
 
         return self.items_data
 
+    def __annotate_bars(self, ax, bars):
+        for bar in bars:
+            ax.annotate(
+                f"{bar.get_height():.2f}",
+                xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
+                xytext=(0, 3),
+                textcoords="offset points",
+                ha="center",
+                va="bottom",
+                bbox=dict(boxstyle="round,pad=0.1", fc="white", ec="white"),
+            )
+
     def questions_data(self) -> list:
         question_pool_qs = QuestionPoolHasQuestion.objects.select_related(
             "question"
@@ -101,59 +113,40 @@ class AssessmentResultDataExtractor(BaseDataExtractor):
             if mdd.user_assessment
         ]
 
-    def average_correct_answer_per_question_chart(self) -> str:
+    def __bar_chart(self, y_field: str, ylabel: str, title: str, color: str) -> str:
         fig, ax = self._get_subplots()
 
         x_axis = []
         y_axis = []
         for k, v in sorted(self.__items_design_data().items(), key=lambda x: x[0]):
             x_axis.append(str(k))
-            y_axis.append(v["avg_answer"])
+            y_axis.append(v[y_field])
 
-        bars = ax.bar(x_axis, y_axis, color="#00ffaa", edgecolor="black", hatch="\\")
+        bars = ax.bar(x_axis, y_axis, color=color, edgecolor="black", hatch="\\")
 
-        for bar in bars:
-            ax.annotate(
-                f"{bar.get_height():.2f}",
-                xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
-                xytext=(0, 3),
-                textcoords="offset points",
-                ha="center",
-                va="bottom",
-            )
+        self.__annotate_bars(ax, bars)
 
         ax.set_xlabel("Questões")
-        ax.set_ylabel("Acerto")
-        ax.set_title("Média de resposta correta em cada questão")
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
 
         return self._fig_to_base64(fig)
+
+    def average_correct_answer_per_question_chart(self) -> str:
+        return self.__bar_chart(
+            "avg_answer",
+            "Acerto",
+            "Média de resposta correta em cada questão",
+            "#00ffaa",
+        )
 
     def average_time_per_question_chart(self) -> str:
-        fig, ax = self._get_subplots()
-
-        x_axis = []
-        y_axis = []
-        for k, v in sorted(self.__items_design_data().items(), key=lambda x: x[0]):
-            x_axis.append(str(k))
-            y_axis.append(v["avg_time"])
-
-        bars = ax.bar(x_axis, y_axis, color="#00AAFF", edgecolor="black", hatch="\\")
-
-        for bar in bars:
-            ax.annotate(
-                f"{bar.get_height():.1f}",
-                xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
-                xytext=(0, 3),
-                textcoords="offset points",
-                ha="center",
-                va="bottom",
-            )
-
-        ax.set_xlabel("Questões")
-        ax.set_ylabel("Tempo (s)")
-        ax.set_title("Tempo médio de resposta em cada questão")
-
-        return self._fig_to_base64(fig)
+        return self.__bar_chart(
+            "avg_time",
+            "Tempo (s)",
+            "Tempo médio de resposta em cada questão",
+            "#00aaff",
+        )
 
 
 class AssessmentStudentDetailDataExtractor(BaseDataExtractor):
@@ -164,10 +157,22 @@ class AssessmentStudentDetailDataExtractor(BaseDataExtractor):
             self.user_assessment.id
         )
 
-    def __plot_chart(self, y_axis: str, ylabel: str, title: str, color: str, precision: int = 1) -> str:
+    def __plot_chart(
+        self,
+        y_field: str,
+        ylabel: str,
+        title: str,
+        color: str,
+        precision: int = 1,
+        add_initial: bool = False,
+    ) -> str:
         fig, ax = self._get_subplots()
 
         x_axis = [str(i) for i in self.mirt_design_data.item_history]
+        y_axis = getattr(self.mirt_design_data, y_field, [])
+
+        if add_initial:
+            x_axis = ["Inicial"] + x_axis
 
         ax.plot(
             x_axis,
@@ -187,6 +192,7 @@ class AssessmentStudentDetailDataExtractor(BaseDataExtractor):
                 textcoords="offset points",
                 xytext=(0, 5),
                 ha="center",
+                bbox=dict(boxstyle="round,pad=0", fc="white", ec="white"),
             )
 
         ax.set_xlabel("Questões")
@@ -197,7 +203,7 @@ class AssessmentStudentDetailDataExtractor(BaseDataExtractor):
 
     def time_history_chart(self) -> str:
         return self.__plot_chart(
-            self.mirt_design_data.item_time_history,
+            "item_time_history",
             "Tempo (s)",
             "Histórico de Tempo por Questão",
             "#00AAFF",
@@ -205,27 +211,29 @@ class AssessmentStudentDetailDataExtractor(BaseDataExtractor):
 
     def response_history_chart(self) -> str:
         return self.__plot_chart(
-            self.mirt_design_data.response_history,
+            "response_history",
             "Acerto",
             "Histórico de Acerto por Questão",
             "#00FFAA",
-            precision=0
+            precision=0,
         )
 
     def theta_history_chart(self) -> str:
         return self.__plot_chart(
-            self.mirt_design_data.theta_history[1:],
+            "theta_history",
             "theta",
             "Histórico de Theta por Questão",
             "#FFAA00",
-            precision=3
+            precision=3,
+            add_initial=True,
         )
 
     def standard_error_history_chart(self) -> str:
         return self.__plot_chart(
-            self.mirt_design_data.standard_error_history[1:],
+            "standard_error_history",
             "mse",
             "Histórico de Erro Padrão por Questão",
             "#AA00FF",
-            precision=3
+            precision=3,
+            add_initial=True,
         )

@@ -106,7 +106,10 @@
       }
 
       .chart-container img {
-        width: 48%;
+        width: 49%;
+        margin-bottom: 2rem;
+        border-radius: 0.5rem;
+        box-shadow: #0003 0px 0px 10px;
       }
 
       .table-container {
@@ -176,6 +179,11 @@
     <main>
       <section>ℹ️ Detalhes</section>
       <section>📊 Gráficos</section>
+      <div class="chart-container">
+        {% for chart_f, chart_b64 in charts %}
+        <img src="data:image/png;base64,{{ chart_b64 }}" alt="{{ chart_f }}" />
+        {% endfor %}
+      </div>
     </main>
   </body>
 </html>

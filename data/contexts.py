@@ -50,6 +50,15 @@ class AssessmentStudentDetailContext(BaseContext):
     obj_model = UserAssessment
     data_extractor_class = AssessmentStudentDetailDataExtractor
 
+    def charts_data(self) -> list:
+        chart_functions = [
+            self.data_extractor.time_history_chart,
+            self.data_extractor.response_history_chart,
+            self.data_extractor.theta_history_chart,
+            self.data_extractor.standard_error_history_chart,
+        ]
+        return [(func.__name__, func()) for func in chart_functions]
+
     def __call__(self):
         return {
             **self.data,
@@ -61,4 +70,5 @@ class AssessmentStudentDetailContext(BaseContext):
                 "id": self.obj.assessment.id,
                 "name": self.obj.assessment.name,
             },
+            "charts": self.charts_data(),
         }
