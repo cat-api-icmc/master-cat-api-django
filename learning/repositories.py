@@ -50,6 +50,12 @@ class AssessmentRepository(object):
 class MirtDesignDataRepository(object):
 
     @classmethod
+    def design_by_user_assessment(cls, user_assessment_id: int) -> MirtDesignData:
+        return MirtDesignData.objects.filter(
+            user_assessment_id=user_assessment_id
+        ).first()
+
+    @classmethod
     def designs_by_assessment(cls, assessment_id: int):
         return MirtDesignData.objects.select_related(
             "user_assessment", "user_assessment__user"

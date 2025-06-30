@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Resultado da Avaliação</title>
+    <title>Desempenho do Aluno na Avaliação</title>
     <style>
       :root {
         --primary: #312da8;
@@ -65,6 +65,16 @@
         font-size: 1.5rem;
         font-weight: 700;
         color: var(--primary);
+      }
+
+      .nav-subtitle {
+        color: var(--primary);
+        font-size: 1.25rem;
+        font-weight: 400;
+      }
+
+      .nav-title,
+      .nav-subtitle {
         text-decoration: none;
 
         &:hover {
@@ -76,7 +86,6 @@
         display: flex;
         align-items: center;
         gap: 1rem;
-        visible: hidden;
       }
 
       .nav-end-item {
@@ -149,89 +158,24 @@
   </head>
   <body>
     <nav>
-      <a
-        class="nav-title"
-        href="/admin/learning/assessment/{{assessment_id}}/change"
-        >{{assessment_name}}</a
+      <span
+        ><a
+          class="nav-title"
+          href="/admin/user/studentuser/{{student.id}}/change/"
+          >{{student.name}} | </a
+        ><a
+          class="nav-subtitle"
+          href="/admin/learning/assessment/{{assessment.id}}/change"
+          >{{assessment.name}}</a
+        ></span
       >
       <div class="nav-end">
         <span class="nav-end-item" onclick="print()">Baixar</span>
       </div>
     </nav>
     <main>
-      <section>ℹ️ Informações sobre as questões</section>
-      <div class="table-container">
-        <table>
-          <tr>
-            <th>Index</th>
-            <th>Questão</th>
-            <th>Tempo médio (s)</th>
-            <th>Taxa de acerto</th>
-          </tr>
-          {% for item in questions %}
-          <tr>
-            <td>{{item.index}}</td>
-            <td>
-              <a
-                href="/admin/learning/question/{{item.id}}/change/"
-                target="__blank"
-              >
-                {{item.statement}}
-              </a>
-            </td>
-            <td>{{item.avg_time | floatformat:1}}</td>
-            <td>{{item.avg_answer | floatformat:2}}</td>
-          </tr>
-          {% endfor %}
-        </table>
-      </div>
-      <section>🧑‍🎓 Informações sobre os alunos</section>
-      <div class="table-container">
-        <table>
-          <tr>
-            <th>Aluno</th>
-            <th>Email</th>
-            <th>Data de realização</th>
-            <th>Taxa de acerto</th>
-            <th>Tempo de completude (s)</th>
-            <th>Último Theta</th>
-            <th>Último MSE</th>
-            <th></th>
-          </tr>
-          {% for student in students %}
-          <tr>
-            <td>
-              <a
-                href="/admin/user/studentuser/{{student.id}}/change/"
-                target="__blank"
-              >
-                {{student.name}}
-              </a>
-            </td>
-            <td>{{student.email}}</td>
-            <td>{{student.completion_date}}</td>
-            <td>{{student.score | floatformat:2}}</td>
-            <td>{{student.completion_time}}</td>
-            <td>{{student.last_theta | floatformat:3}}</td>
-            <td>{{student.last_standard_error | floatformat:3}}</td>
-            <td>
-              <a
-                href="/data/assessment/student/{{student.user_assessment_uuid}}/detail"
-                target="__blank"
-                class="nav-end-item"
-                >Detalhe</a
-              >
-            </td>
-          </tr>
-          {% endfor %}
-        </table>
-      </div>
+      <section>ℹ️ Detalhes</section>
       <section>📊 Gráficos</section>
-      <div class="chart-container">
-        {% for chart_f, chart_b64 in charts %}
-        <img src="data:image/png;base64,{{ chart_b64 }}" alt="{{ chart_f }}" />
-        {% endfor %}
-      </div>
     </main>
   </body>
 </html>

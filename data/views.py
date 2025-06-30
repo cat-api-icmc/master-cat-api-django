@@ -13,3 +13,7 @@ class BaseView(TemplateView):
 class AssessmentResultView(BaseView):
     template_name = "data/assessment_result.html"
     context_class = AssessmentResultContext
+
+class AssessmentStudentDetailView(BaseView):
+    template_name = "data/assessment_student_detail.html"
+    context_class = AssessmentStudentDetailContext
