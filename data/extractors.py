@@ -157,6 +157,25 @@ class AssessmentStudentDetailDataExtractor(BaseDataExtractor):
             self.user_assessment.id
         )
 
+    def questions_data(self) -> list:
+        data = [
+            {
+                "index": ih,
+                "response": bool(self.mirt_design_data.response_history[i]),
+                "theta": self.mirt_design_data.theta_history[i + 1],
+                "mse": self.mirt_design_data.standard_error_history[i + 1],
+            }
+            for i, ih in enumerate(self.mirt_design_data.item_history)
+        ]
+        return [
+            {
+                "index": "Inicial",
+                "response": False,
+                "theta": self.mirt_design_data.theta_history[0],
+                "mse": self.mirt_design_data.standard_error_history[0],
+            }
+        ] + data
+
     def __plot_chart(
         self,
         y_field: str,

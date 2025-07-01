@@ -113,6 +113,8 @@
       }
 
       .table-container {
+        display: flex;
+        justify-content: center;
         overflow-x: auto;
 
         &::-webkit-scrollbar {
@@ -135,6 +137,7 @@
       td {
         padding: 0.25rem 0.75rem;
         white-space: nowrap;
+        text-align: center;
       }
 
       th {
@@ -177,12 +180,30 @@
       </div>
     </nav>
     <main>
-      <section>ℹ️ Detalhes</section>
       <section>📊 Gráficos</section>
       <div class="chart-container">
         {% for chart_f, chart_b64 in charts %}
         <img src="data:image/png;base64,{{ chart_b64 }}" alt="{{ chart_f }}" />
         {% endfor %}
+      </div>
+      <section>ℹ️ Detalhes da Questões</section>
+      <div class="table-container">
+        <table>
+          <tr>
+            <th>Index</th>
+            <th>Resposta</th>
+            <th>Theta</th>
+            <th>Erro padrão</th>
+          </tr>
+          {% for item in questions %}
+          <tr>
+            <td>{{item.index}}</td>
+            <td>{% if item.response %} ✅ {% endif %}</td>
+            <td>{{item.theta | floatformat:5}}</td>
+            <td>{{item.mse | floatformat:5}}</td>
+          </tr>
+          {% endfor %}
+        </table>
       </div>
     </main>
   </body>

@@ -190,6 +190,12 @@
           {% endfor %}
         </table>
       </div>
+      <section>📊 Gráficos</section>
+      <div class="chart-container">
+        {% for chart_f, chart_b64 in charts %}
+        <img src="data:image/png;base64,{{ chart_b64 }}" alt="{{ chart_f }}" />
+        {% endfor %}
+      </div>
       <section>🧑‍🎓 Informações sobre os alunos</section>
       <div class="table-container">
         <table>
@@ -230,12 +236,6 @@
           </tr>
           {% endfor %}
         </table>
-      </div>
-      <section>📊 Gráficos</section>
-      <div class="chart-container">
-        {% for chart_f, chart_b64 in charts %}
-        <img src="data:image/png;base64,{{ chart_b64 }}" alt="{{ chart_f }}" />
-        {% endfor %}
       </div>
     </main>
   </body>

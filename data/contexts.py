@@ -49,6 +49,9 @@ class AssessmentResultContext(BaseContext):
 class AssessmentStudentDetailContext(BaseContext):
     obj_model = UserAssessment
     data_extractor_class = AssessmentStudentDetailDataExtractor
+    
+    def questions_data(self) -> list:
+        return self.data_extractor.questions_data()
 
     def charts_data(self) -> list:
         chart_functions = [
@@ -70,5 +73,6 @@ class AssessmentStudentDetailContext(BaseContext):
                 "id": self.obj.assessment.id,
                 "name": self.obj.assessment.name,
             },
+            "questions": self.questions_data(),
             "charts": self.charts_data(),
         }
