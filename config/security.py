@@ -4,7 +4,7 @@ SECRET_KEY = env('SECRET_KEY')
 
 PORT = env('PORT', default=8000, cast=int)
 
-ALLOWED_PORTS = [PORT, 3000]
+ALLOWED_PORTS = [PORT, 9443, 3000]
 
 ALLOWED_HOSTS = env('ALLOWED_HOSTS', default='*').split(';')
 
