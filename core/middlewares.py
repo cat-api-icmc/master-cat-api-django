@@ -11,3 +11,11 @@ class AuthUserMiddleware(MiddlewareMixin):
             request._user = _user
         except:
             pass
+
+
+class XForwardedPrefixMiddleware(MiddlewareMixin):
+
+    def process_request(self, request):
+        prefix = request.META.get("HTTP_X_FORWARDED_PREFIX")
+        if prefix:
+            request.META["SCRIPT_NAME"] = prefix

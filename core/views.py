@@ -46,14 +46,14 @@ class HealthCheck(viewsets.GenericViewSet):
     def all(self, request, *args, **kwargs):
         db_chk, db_data = self.__check_database_connection()
         plumber_chk, plumber_data = self.__check_plumber_connection()
+        status_ok = db_chk and plumber_chk
         _status = (
-            status.HTTP_200_OK
-            if db_chk and plumber_chk
-            else status.HTTP_500_INTERNAL_SERVER_ERROR
+            status.HTTP_200_OK if status_ok else status.HTTP_500_INTERNAL_SERVER_ERROR
         )
         payload = {
-            "RestAPI": "Healthy!",
-            "Database": db_data,
-            "PlumberAPI": plumber_data,
+            "status": status_ok,
+            "rest-api": "Healthy!",
+            "satabase": db_data,
+            "plumber-api": plumber_data,
         }
         return Response(payload, status=_status)
