@@ -19,7 +19,7 @@ APP_URLS = [
 ]
 
 DJANGO_URLS = [
-    path('login/', auth_views.LoginView.as_view(), name='login'),
+    path('login/', auth_views.LoginView.as_view(template_name='admin/login.html'), name='login'),
     path('admin/', admin.site.urls, name='admin'),
     path("ckeditor5/", include('django_ckeditor_5.urls'), name="ck_editor_5_upload_file"),
 ]
