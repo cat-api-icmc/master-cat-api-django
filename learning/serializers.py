@@ -1,5 +1,12 @@
 from rest_framework import serializers
-from .models import AssessmentConfig, Question, Alternative, Assessment
+from .models import (
+    AssessmentConfig,
+    AssessmentType,
+    Question,
+    Alternative,
+    Assessment,
+    QuestionParams,
+)
 
 
 class AlternativeSerializer(serializers.ModelSerializer):
@@ -19,12 +26,74 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = ("id", "statement", "alternatives")
 
 
+class IrtQuestionParamsPlumberSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = QuestionParams
+        fields = (
+            "id",
+            "irt_discrimination",
+            "irt_difficulty",
+            "irt_guess",
+            "irt_upper_asymptote",
+        )
+
+
+class MirtQuestionParamsPlumberSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = QuestionParams
+        fields = ("id", "irt_mparams")
+
+
+class DinQuestionParamsPlumberSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = QuestionParams
+        fields = ("id", "cdm_slipping", "cdm_guessing", "cdm_qmatrix")
+
+
+class GdinaQuestionParamsPlumberSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = QuestionParams
+        fields = ("id", "cdm_mparams", "cdm_qmatrix")
+
+
 class QuestionPlumberSerializer(serializers.ModelSerializer):
     id = serializers.CharField(source="uuid", read_only=True)
+    params = serializers.SerializerMethodField()
 
     class Meta:
         model = Question
-        fields = ("id", "discrimination", "difficulty", "guess")
+        fields = ("id", "params")
+
+    @classmethod
+    def get_model_serializer(cls, model):
+        switcher = {
+            AssessmentType.IRT_1PL: IrtQuestionParamsPlumberSerializer,
+            AssessmentType.IRT_2PL: IrtQuestionParamsPlumberSerializer,
+            AssessmentType.IRT_3PL: IrtQuestionParamsPlumberSerializer,
+            AssessmentType.IRT_4PL: IrtQuestionParamsPlumberSerializer,
+            AssessmentType.MIRT_1PL: MirtQuestionParamsPlumberSerializer,
+            AssessmentType.MIRT_2PL: MirtQuestionParamsPlumberSerializer,
+            AssessmentType.MIRT_3PL: MirtQuestionParamsPlumberSerializer,
+            AssessmentType.MIRT_4PL: MirtQuestionParamsPlumberSerializer,
+            AssessmentType.CDM_DINA: DinQuestionParamsPlumberSerializer,
+            AssessmentType.CDM_DINO: DinQuestionParamsPlumberSerializer,
+            AssessmentType.CDM_GDINA: GdinaQuestionParamsPlumberSerializer,
+        }
+        return switcher[model]
+
+    def get_params(self, obj):
+        question_params = self.context.get("question_params", [])
+        params_obj = next(
+            [qp for qp in question_params if qp.question_id == obj.id], None
+        )
+        if params_obj:
+            serializer_class = self.get_model_serializer(params_obj.model)
+            return serializer_class(obj)
+        return None
 
 
 class AssessmentSerializer(serializers.ModelSerializer):
@@ -34,9 +103,9 @@ class AssessmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assessment
         fields = ("id", "name", "fixed_question_count", "in_progress")
-        
+
     def get_in_progress(self, obj):
-        return getattr(obj, 'in_progress', False)
+        return getattr(obj, "in_progress", False)
 
 
 class AssessmentConfigSerializer(serializers.ModelSerializer):
@@ -49,18 +118,18 @@ class AssessmentConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assessment
         fields = tuple([field.name for field in AssessmentConfig._meta.fields])
-    
+
     def get_start_item(self, obj: AssessmentConfig):
-        return obj.start_item or 'random'
-    
+        return obj.start_item or "random"
+
     def get_min_sem(self, obj: AssessmentConfig):
         return obj.min_sem_value
-    
+
     def get_delta_thetas(self, obj: AssessmentConfig):
         return obj.delta_thetas_value
-    
+
     def get_thetas_start(self, obj: AssessmentConfig):
         return obj.thetas_start_value
-    
+
     def get_pattern_theta(self, obj: AssessmentConfig):
         return obj.pattern_theta_value

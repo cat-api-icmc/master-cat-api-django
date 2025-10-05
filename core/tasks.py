@@ -27,7 +27,7 @@ def upload_questions_json(obj_file) -> int:
         )
         questions_created.append(obj)
 
-    pool = QuestionPoolService.create_pool(questions_created, super=True)
+    pool = QuestionPoolService.create_pool(questions_created, super_pool=True)
     return len(pool)
 
 
@@ -78,7 +78,7 @@ def upload_questions_mdl(obj_file) -> int:
         )
         questions_created.append(obj)
 
-    pool = QuestionPoolService.create_pool(questions_created, super=True)
+    pool = QuestionPoolService.create_pool(questions_created, super_pool=True)
     return len(pool)
 
 

@@ -16,8 +16,8 @@ class BaseClient(object):
         self,
         endpoint: str,
         method: Literal["GET", "POST", "PATCH", "DELETE", "PUT"] = "GET",
-        query: dict = {},
-        body: dict = {},
+        query: dict | None = None,
+        body: dict | None = None,
     ) -> requests.Response:
         if method not in ["GET", "POST", "PATCH", "DELETE", "PUT"]:
             return

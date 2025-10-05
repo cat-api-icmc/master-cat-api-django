@@ -8,15 +8,82 @@ from user.models import StudentUser
 from datetime import timedelta
 
 
+class AssessmentType(object):
+    IRT_4PL = "4PL"
+    IRT_3PL = "3PL"
+    IRT_2PL = "2PL"
+    IRT_1PL = "1PL"
+    
+    MIRT_4PL = "4PL"
+    MIRT_3PL = "3PL"
+    MIRT_2PL = "2PL"
+    MIRT_1PL = "1PL"
+
+    CDM_DINA = "DINA"
+    CDM_DINO = "DINO"
+    
+    CDM_GDINA = "GDINA"
+
+    CHOICES = (
+        (IRT_4PL, "TRI - 4 Parâmetros"),
+        (IRT_3PL, "TRI - 3 Parâmetros"),
+        (IRT_2PL, "TRI - 2 Parâmetros"),
+        (IRT_1PL, "TRI - 1 Parâmetro"),
+        (MIRT_4PL, "TRI - 4 Parâmetros Multidimensionais"),
+        (MIRT_3PL, "TRI - 3 Parâmetros Multidimensionais"),
+        (MIRT_2PL, "TRI - 2 Parâmetros Multidimensionais"),
+        (MIRT_1PL, "TRI - 1 Parâmetro Multidimensional"),
+        (CDM_DINA, "CDM - DINA"),
+        (CDM_DINO, "CDM - DINO"),
+        (CDM_GDINA, "CDM - GDINA"),
+    )
+
+    @classmethod
+    def is_irt(cls, type_: str) -> bool:
+        return type_ in (
+            cls.IRT_1PL,
+            cls.IRT_2PL,
+            cls.IRT_3PL,
+            cls.IRT_4PL,
+            cls.MIRT_1PL,
+            cls.MIRT_2PL,
+            cls.MIRT_3PL,
+            cls.MIRT_4PL,
+        )
+
+    @classmethod
+    def is_cdm(cls, type_: str) -> bool:
+        return type_ in (cls.CDM_DINA, cls.CDM_DINO, cls.CDM_GDINA)
+
+
+class Question(SoftDeletableModel, CKEditorModelMixin):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True)
+    statement = CKEditor5Field("Enunciado")
+
+    class Meta:
+        db_table = "questions"
+        verbose_name = "Questão"
+        verbose_name_plural = "Questões"
+
+    def __str__(self) -> str:
+        return f"{self.pk} - {str(self.statement)[:10]}..."
+
+    def save(self, *args, **kwargs):
+        self.handle_ck_editor_fields()
+        return super().save(*args, **kwargs)
+
+
 class IRTParams(models.Model):
     """
-    Fields used to store the parameters for the IRT model.
+    Fields used to store the parameters for the IRT models.
     ...
     """
 
-    discrimination = models.FloatField("Discriminação", default=1.0)
-    difficulty = models.FloatField("Dificuldade", default=0.0)
-    guess = models.FloatField("Chute", default=0.0)
+    irt_difficulty = models.FloatField("Dificuldade", default=0.0)
+    irt_discrimination = models.FloatField("Discriminação", default=1.0)
+    irt_guess = models.FloatField("Chute", default=0.0)
+    irt_upper_asymptote = models.FloatField("Assimptota Superior", default=1.0)
+    irt_mparams = models.JSONField("Parâmetros Multidimensionais", default=list)
 
     class Meta:
         abstract = True
@@ -28,38 +95,36 @@ class CDMParams(models.Model):
     ...
     """
 
-    # slipping = models.FloatField("Deslize", default=0.0)
-    # guessing = models.FloatField("Chute", default=0.0)
+    cdm_slipping = models.FloatField("Deslize", default=0.0)
+    cdm_guessing = models.FloatField("Chute", default=0.0)
+    cdm_mparams = models.JSONField("Parâmetros Multidimensionais", default=list)
+    cdm_qmatrix = models.JSONField("Valores para a Matriz Q", default=list)
 
     class Meta:
         abstract = True
 
 
-class QuestionMetadata(IRTParams, CDMParams):
+class QuestionParams(SoftDeletableModel, IRTParams, CDMParams):
     """
     Merge Class to store CAT metadata about a question.
     ...
     """
 
-    class Meta:
-        abstract = True
-
-
-class Question(SoftDeletableModel, QuestionMetadata, CKEditorModelMixin):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True)
-    statement = CKEditor5Field("Enunciado")
+    model = models.CharField(
+        "Modelo",
+        max_length=255,
+        choices=AssessmentType.CHOICES,
+        default=AssessmentType.IRT_3PL,
+    )
+    question = models.ForeignKey(
+        Question, on_delete=models.CASCADE, related_name="params"
+    )
 
     class Meta:
-        db_table = "questions"
-        verbose_name = "Questão"
-        verbose_name_plural = "Questões"
-
-    def __str__(self) -> str:
-        return f"{self.pk} - {self.statement[:10]}..."
-
-    def save(self, *args, **kwargs):
-        self.handle_ck_editor_fields()
-        return super().save(*args, **kwargs)
+        db_table = "question_params"
+        verbose_name = "Parâmetros de Questão"
+        verbose_name_plural = "Parâmetros de Questões"
 
 
 class Alternative(SoftDeletableModel, CKEditorModelMixin):
@@ -76,7 +141,7 @@ class Alternative(SoftDeletableModel, CKEditorModelMixin):
         verbose_name_plural = "Alternativas"
 
     def __str__(self) -> str:
-        return f"{self.pk} - {self.text[:10]}..."
+        return f"{self.pk} - {str(self.text)[:10]}..."
 
     def save(self, *args, **kwargs):
         self.handle_ck_editor_fields()
@@ -122,23 +187,6 @@ class QuestionPoolHasQuestion(SoftDeletableModel):
         db_table = "question_pool_has_questions"
         verbose_name = "Questão no Banco de Questões"
         verbose_name_plural = "Questões nos Bancos de Questões"
-
-
-class AssessmentType(object):
-    IRT_3PL = "3PL"
-    IRT_2PL = "2PL"
-    IRT_1PL = "1PL"
-
-    CDM_DINA = "DINA"
-    CDM_DINO = "DINO"
-
-    CHOICES = (
-        (IRT_3PL, "TRI - 3 Parâmetros"),
-        (IRT_2PL, "TRI - 2 Parâmetros"),
-        (IRT_1PL, "TRI - 1 Parâmetro"),
-        (CDM_DINA, "CDM - DINA"),
-        (CDM_DINO, "CDM - DINO"),
-    )
 
 
 class CriteriaTypes(object):
@@ -296,6 +344,14 @@ class AssessmentConfig(models.Model):
     def fixed_question_count(self) -> int:
         return self.min_items if self.min_items == self.max_items else 0
 
+    @property
+    def is_irt(self) -> bool:
+        return AssessmentType.is_irt(self.type)
+
+    @property
+    def is_cdm(self) -> bool:
+        return AssessmentType.is_cdm(self.type)
+
 
 class Assessment(SoftDeletableModel, AssessmentConfig):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True)
@@ -365,7 +421,7 @@ class UserAssessment(SoftDeletableModel):
         db_table = "user_has_assessments"
         verbose_name = "Avaliação do Usuário"
         verbose_name_plural = "Avaliações dos Usuários"
-        
+
     @property
     def completion_time(self) -> int:
         if self.finished and self.created:
@@ -407,7 +463,7 @@ class MirtDesignData(SoftDeletableModel):
 
     def __len__(self) -> int:
         return len(self.item_history)
-    
+
     @property
     def score(self) -> float:
         return sum(self.response_history) / len(self.response_history)

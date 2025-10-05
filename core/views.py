@@ -22,28 +22,28 @@ class HealthCheck(viewsets.GenericViewSet):
             return False, {"status": "Unhealthy!"}
 
     @classmethod
-    def __check_plumber_connection(self) -> tuple:
+    def __check_plumber_connection(cls) -> tuple:
         return PlumberClient().health_check()
 
     @classmethod
-    def __check(self, method) -> Response:
+    def __check(cls, method) -> Response:
         chk, data = method()
         _status = status.HTTP_200_OK if chk else status.HTTP_500_INTERNAL_SERVER_ERROR
         return Response(data, status=_status)
 
-    def list(self, request, *args, **kwargs):
+    def list(self, request):
         return Response({"status": "Healthy!"}, status=status.HTTP_200_OK)
 
     @action(methods=["get"], url_path="db", url_name="db", detail=False)
-    def db(self, request, *args, **kwargs):
+    def db(self, request):
         return self.__check(self.__check_database_connection)
 
     @action(methods=["get"], url_path="plumber", url_name="plumber", detail=False)
-    def plumber(self, request, *args, **kwargs):
+    def plumber(self, request):
         return self.__check(self.__check_plumber_connection)
 
     @action(methods=["get"], url_path="all", url_name="all", detail=False)
-    def all(self, request, *args, **kwargs):
+    def all(self, request):
         db_chk, db_data = self.__check_database_connection()
         plumber_chk, plumber_data = self.__check_plumber_connection()
         status_ok = db_chk and plumber_chk

@@ -1,5 +1,7 @@
+from typing import List
 from learning.models import (
     Assessment,
+    QuestionParams,
     QuestionPool,
     UserAssessment,
     MirtDesignData,
@@ -19,8 +21,8 @@ class QuestionPoolService(object):
         ).question
 
     @classmethod
-    def create_pool(cls, queryset: list, super=False) -> QuestionPool:
-        pool = QuestionPool.objects.create(name="_", super_pool=super)
+    def create_pool(cls, queryset: list, super_pool=False) -> QuestionPool:
+        pool = QuestionPool.objects.create(name="_", super_pool=super_pool)
 
         qphq = [
             QuestionPoolHasQuestion(pool=pool, question=q, order=i + 1)
@@ -50,14 +52,22 @@ class UserAssessmentService(object):
         questions = assessment.pool.questions.filter(
             questionpoolhasquestion__removed__isnull=True
         ).order_by("questionpoolhasquestion__order")
+        question_params = QuestionParams.objects.filter(
+            question_id__in=(q.id for q in questions), model=assessment.type
+        )
 
-        questions_data = QuestionPlumberSerializer(questions, many=True).data
+        questions_data = QuestionPlumberSerializer(
+            questions, many=True, context={"question_params": question_params}
+        ).data
 
         assessment_config = AssessmentConfigSerializer(assessment).data
 
-        plumb_code, plumb_response = PlumberClient().start_assesment(
-            questions_data, assessment_config
+        start_function = (
+            PlumberClient().cdm_start_assesment
+            if assessment.is_cdm
+            else PlumberClient().irt_start_assesment
         )
+        plumb_code, plumb_response = start_function(questions_data, assessment_config)
 
         if plumb_code >= 400:
             return {"data": plumb_response, "status": plumb_code}, False
