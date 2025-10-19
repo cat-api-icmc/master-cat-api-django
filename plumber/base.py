@@ -28,9 +28,9 @@ class BaseClient(object):
     ) -> None:
         file_path = "log/plumber"
         os.makedirs(file_path, exist_ok=True)
-        file_name = f"{file_path}/{arrow.now()}_{method}_{url}.json",
+        file_name = f"{arrow.now()}_{method}_{url}.json"
         with open(
-            re.sub(r'[^\w\-]', '_', file_name),
+            f'{file_path}/{re.sub(r'[^\w\-]', '_', file_name)}',
             "w",
             encoding="utf-8",
         ) as file:

@@ -22,8 +22,6 @@ class QuestionAdmin(admin.ModelAdmin):
     inlines = [AlternativeInline]
     fieldsets = (
         (None, {"fields": ("id", "uuid")}),
-        ("Parâmetros IRT", {"fields": [f.name for f in IRTParams._meta.fields]}),
-        ("Parâmetros CDM", {"fields": [f.name for f in CDMParams._meta.fields]}),
         ("Conteúdo", {"fields": ("statement",)}),
     )
 
