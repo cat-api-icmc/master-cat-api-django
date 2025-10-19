@@ -1,4 +1,4 @@
-from typing import List
+from django.db.models import F
 from learning.models import (
     Assessment,
     QuestionParams,
@@ -10,7 +10,6 @@ from learning.models import (
 )
 from learning.serializers import AssessmentConfigSerializer, QuestionPlumberSerializer
 from plumber.client import PlumberClient
-
 
 class QuestionPoolService(object):
 
@@ -51,6 +50,8 @@ class UserAssessmentService(object):
     ) -> tuple[UserAssessment, bool]:
         questions = assessment.pool.questions.filter(
             questionpoolhasquestion__removed__isnull=True
+        ).annotate(
+            question_order=F("questionpoolhasquestion__order")
         ).order_by("questionpoolhasquestion__order")
         question_params = QuestionParams.objects.filter(
             question_id__in=(q.id for q in questions), model=assessment.type

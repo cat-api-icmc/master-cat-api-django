@@ -1,12 +1,12 @@
+from django.contrib import admin
+from django.utils.safestring import mark_safe
 from core.tasks import (
     upload_questions_json,
     upload_questions_csv,
     upload_questions_mdl,
     mass_create_users,
 )
-from .models import MassProcess, UploadQuestions
-from django.contrib import admin
-from django.utils.safestring import mark_safe
+from core.models import MassProcess, UploadQuestions
 
 
 @admin.register(UploadQuestions)

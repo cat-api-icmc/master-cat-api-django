@@ -37,6 +37,7 @@ class QuestionInline(admin.TabularInline):
     model = QuestionPoolHasQuestion
     fields = ("question", "order")
     extra = 1
+    raw_id_fields = ("question",)
 
 
 @admin.register(QuestionPool)

@@ -13,15 +13,15 @@ class AssessmentType(object):
     IRT_3PL = "3PL"
     IRT_2PL = "2PL"
     IRT_1PL = "1PL"
-    
-    MIRT_4PL = "4PL"
-    MIRT_3PL = "3PL"
-    MIRT_2PL = "2PL"
-    MIRT_1PL = "1PL"
+
+    MIRT_4PL = "M4PL"
+    MIRT_3PL = "M3PL"
+    MIRT_2PL = "M2PL"
+    MIRT_1PL = "M1PL"
 
     CDM_DINA = "DINA"
     CDM_DINO = "DINO"
-    
+
     CDM_GDINA = "GDINA"
 
     CHOICES = (

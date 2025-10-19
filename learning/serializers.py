@@ -26,7 +26,15 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = ("id", "statement", "alternatives")
 
 
-class IrtQuestionParamsPlumberSerializer(serializers.ModelSerializer):
+class QuestionParamsPlumberSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(source="uuid", read_only=True)
+
+    class Meta:
+        model = QuestionParams
+        fields = ("id",)
+
+
+class IrtQuestionParamsPlumberSerializer(QuestionParamsPlumberSerializer):
 
     class Meta:
         model = QuestionParams
@@ -39,21 +47,21 @@ class IrtQuestionParamsPlumberSerializer(serializers.ModelSerializer):
         )
 
 
-class MirtQuestionParamsPlumberSerializer(serializers.ModelSerializer):
+class MirtQuestionParamsPlumberSerializer(QuestionParamsPlumberSerializer):
 
     class Meta:
         model = QuestionParams
         fields = ("id", "irt_mparams")
 
 
-class DinQuestionParamsPlumberSerializer(serializers.ModelSerializer):
+class DinQuestionParamsPlumberSerializer(QuestionParamsPlumberSerializer):
 
     class Meta:
         model = QuestionParams
         fields = ("id", "cdm_slipping", "cdm_guessing", "cdm_qmatrix")
 
 
-class GdinaQuestionParamsPlumberSerializer(serializers.ModelSerializer):
+class GdinaQuestionParamsPlumberSerializer(QuestionParamsPlumberSerializer):
 
     class Meta:
         model = QuestionParams
@@ -62,14 +70,18 @@ class GdinaQuestionParamsPlumberSerializer(serializers.ModelSerializer):
 
 class QuestionPlumberSerializer(serializers.ModelSerializer):
     id = serializers.CharField(source="uuid", read_only=True)
+    order = serializers.SerializerMethodField()
     params = serializers.SerializerMethodField()
 
     class Meta:
         model = Question
-        fields = ("id", "params")
+        fields = ("id", "order", "params")
+
+    def get_order(self, obj):
+        return getattr(obj, "question_order", 0)
 
     @classmethod
-    def get_model_serializer(cls, model):
+    def __get_model_serializer(cls, model):
         switcher = {
             AssessmentType.IRT_1PL: IrtQuestionParamsPlumberSerializer,
             AssessmentType.IRT_2PL: IrtQuestionParamsPlumberSerializer,
@@ -88,11 +100,11 @@ class QuestionPlumberSerializer(serializers.ModelSerializer):
     def get_params(self, obj):
         question_params = self.context.get("question_params", [])
         params_obj = next(
-            [qp for qp in question_params if qp.question_id == obj.id], None
+            (qp for qp in question_params if qp.question_id == obj.id), None
         )
         if params_obj:
-            serializer_class = self.get_model_serializer(params_obj.model)
-            return serializer_class(obj)
+            serializer_class = self.__get_model_serializer(params_obj.model)
+            return serializer_class(params_obj).data
         return None
 
 
@@ -114,10 +126,13 @@ class AssessmentConfigSerializer(serializers.ModelSerializer):
     delta_thetas = serializers.SerializerMethodField()
     thetas_start = serializers.SerializerMethodField()
     pattern_theta = serializers.SerializerMethodField()
+    model_type = serializers.CharField(source="type")
 
     class Meta:
         model = Assessment
-        fields = tuple([field.name for field in AssessmentConfig._meta.fields])
+        fields = tuple(
+            [field.name for field in AssessmentConfig._meta.fields] + ["model_type"]
+        )
 
     def get_start_item(self, obj: AssessmentConfig):
         return obj.start_item or "random"
