@@ -1,15 +1,31 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
-from learning.forms import AssessmentForm
+from learning.forms import AssessmentForm, QuestionParamsInlineForm
 from learning.services import QuestionPoolService
 from user.models import UserPoolHasAssessment
-from .models import *
+from .models import (
+    Alternative,
+    Assessment,
+    AssessmentConfig,
+    MirtDesignData,
+    Question,
+    QuestionParams,
+    QuestionPool,
+    QuestionPoolHasQuestion,
+    QuestionSuperPool,
+)
 
 
 class AlternativeInline(admin.TabularInline):
     model = Alternative
     extra = 1
+
+
+class QuestionParamsInline(admin.StackedInline):
+    model = QuestionParams
+    extra = 0
+    form = QuestionParamsInlineForm
 
 
 @admin.register(Question)
@@ -19,7 +35,7 @@ class QuestionAdmin(admin.ModelAdmin):
     list_display = ("uuid", "id", "__str__")
     readonly_fields = ("id", "uuid")
     actions = ["create_pool"]
-    inlines = [AlternativeInline]
+    inlines = [AlternativeInline, QuestionParamsInline]
     fieldsets = (
         (None, {"fields": ("id", "uuid")}),
         ("Conteúdo", {"fields": ("statement",)}),

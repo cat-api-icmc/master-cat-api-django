@@ -125,6 +125,10 @@ class QuestionParams(SoftDeletableModel, IRTParams, CDMParams):
         db_table = "question_params"
         verbose_name = "Parâmetros de Questão"
         verbose_name_plural = "Parâmetros de Questões"
+        unique_together = ('model', 'question')
+        
+    def __str__(self) -> str:
+        return self.model
 
 
 class Alternative(SoftDeletableModel, CKEditorModelMixin):
