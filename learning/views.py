@@ -122,10 +122,11 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
             plumb_code, plumb_response = PlumberClient().cdm_next_item(
                 answer=int(alternative.is_correct),
                 previous_index=user_assessment.next_index,
-                encoded_design=user_assessment.design,
-                questions=questions_data,
                 model=user_assessment.assessment.type,
                 criteria=user_assessment.assessment.criteria,
+                method=user_assessment.assessment.method,
+                questions=questions_data,
+                encoded_design=user_assessment.design,
             )
         else:
             plumb_code, plumb_response = PlumberClient().irt_next_item(

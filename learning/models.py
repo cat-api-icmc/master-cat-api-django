@@ -125,10 +125,10 @@ class QuestionParams(SoftDeletableModel, IRTParams, CDMParams):
         db_table = "question_params"
         verbose_name = "Parâmetros de Questão"
         verbose_name_plural = "Parâmetros de Questões"
-        unique_together = ('model', 'question')
-        
+        unique_together = ("model", "question")
+
     def __str__(self) -> str:
-        return self.model
+        return self.model.__str__()
 
 
 class Alternative(SoftDeletableModel, CKEditorModelMixin):
@@ -259,6 +259,18 @@ class CriteriaTypes(object):
     )
 
 
+class MethodTypes(object):
+    MAP = "MAP"
+    EAP = "EAP"
+    MLE = "MLE"
+
+    CHOICES = (
+        (MAP, "MAP - Máxima a Posteriori"),
+        (EAP, "EAP - Esperança a Posteriori"),
+        (MLE, "MLE - Máxima Verossimilhança"),
+    )
+
+
 class AssessmentConfig(models.Model):
     """
     Fields used to store the configuration of an assessment.
@@ -283,6 +295,12 @@ class AssessmentConfig(models.Model):
         max_length=255,
         default=CriteriaTypes.SEQ,
         choices=CriteriaTypes.CHOICES,
+    )
+    method = models.CharField(
+        "Método de Estimação",
+        max_length=255,
+        default=MethodTypes.MLE,
+        choices=MethodTypes.CHOICES,
     )
 
     # Critérios de parada
@@ -462,8 +480,8 @@ class MirtDesignData(SoftDeletableModel):
             return f"{self.pk} | u: {self.user_assessment.user} | a: {self.user_assessment.assessment}"
         return f"{self.pk} - MIRT Design Data"
 
-    def __last(self, iter: list) -> float:
-        return iter[-1] if len(iter) else 0.0
+    def __last(self, iter_: list) -> float:
+        return iter_[-1] if len(iter_) else 0.0
 
     def __len__(self) -> int:
         return len(self.item_history)

@@ -24,7 +24,7 @@ class PlumberClient(object):
             response = self.base.make_request(Endpoints.HEALTH_CHECK)
             response.raise_for_status()
             return True, response.json()
-        except HTTPError:
+        except (HTTPError, ConnectionError):
             return False, {"status": "Unhealthy!"}
 
     def get_design_data(self, encoded_design: str) -> dict:
@@ -54,9 +54,7 @@ class PlumberClient(object):
         )
         return response.status_code, response.json()
 
-    def cdm_start_assesment(
-        self, questions: list, assessment_config: dict
-    ) -> tuple:
+    def cdm_start_assesment(self, questions: list, assessment_config: dict) -> tuple:
         payload = {
             "questions": questions,
             "config": assessment_config,
@@ -72,14 +70,18 @@ class PlumberClient(object):
         previous_index: int,
         model: str,
         criteria: str,
+        method: str,
         questions: list,
         encoded_design: str,
     ) -> tuple:
         payload = {
             "answer": answer,
             "previous_index": previous_index,
-            "model": model,
-            "criteria": criteria,
+            "config": {
+                "model_type": model,
+                "criteria": criteria,
+                "method": method,
+            },
             "questions": questions,
             "design": encoded_design,
         }
