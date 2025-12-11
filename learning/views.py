@@ -156,6 +156,7 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
             data = {
                 "user_assessment": user_assessment.uuid,
                 "status": user_assessment.status,
+                "in_progress": user_assessment.in_progress,
                 "next_question": None,
                 **assessment_data,
             }
