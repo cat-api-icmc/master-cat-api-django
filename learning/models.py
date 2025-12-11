@@ -445,6 +445,10 @@ class UserAssessment(SoftDeletableModel):
         verbose_name_plural = "Avaliações dos Usuários"
 
     @property
+    def in_progress(self) -> bool:
+        return self.status == self.IN_PROGRESS
+
+    @property
     def completion_time(self) -> int:
         if self.finished and self.created:
             delta: timedelta = self.finished - self.created

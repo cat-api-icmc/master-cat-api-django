@@ -110,14 +110,11 @@ class QuestionPlumberSerializer(serializers.ModelSerializer):
 
 class AssessmentSerializer(serializers.ModelSerializer):
     id = serializers.CharField(source="uuid", read_only=True)
-    in_progress = serializers.SerializerMethodField()
 
     class Meta:
         model = Assessment
-        fields = ("id", "name", "fixed_question_count", "in_progress")
+        fields = ("id", "name", "fixed_question_count")
 
-    def get_in_progress(self, obj):
-        return getattr(obj, "in_progress", False)
 
 
 class AssessmentConfigSerializer(serializers.ModelSerializer):
