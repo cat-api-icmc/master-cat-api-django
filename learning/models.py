@@ -194,34 +194,44 @@ class QuestionPoolHasQuestion(SoftDeletableModel):
 
 
 class CriteriaTypes(object):
+    # critérios variados
     SEQ = "seq"
     RANDOM = "random"
 
+    # TRI - critérios baseados em informação
     MI = "MI"
     MEPV = "MEPV"
     MLWI = "MLWI"
     MPWI = "MPWI"
     MEI = "MEI"
 
+    # TRI - critérios baseados em divergência de Kullback-Leibler
     KL = "KL"
     KLn = "KLn"
-
-    IKLP = "IKLP"
     IKL = "IKL"
     IKLn = "IKLn"
+    IKLP = "IKLP"
     IKLPn = "IKLPn"
 
+    # TRI - critérios de regras de informação para testes multidimensionais
     DRULE = "Drule"
     TRULE = "Trule"
     ARULE = "Arule"
     ERULE = "Erule"
     WRULE = "Wrule"
 
+    # TRI - variantes para regras de informação
     DPRULE = "DPrule"
     TPRULE = "TPrule"
     APRULE = "APrule"
     EPRULE = "EPrule"
     WPRULE = "WPrule"
+    
+    # CDM - critérios de seleção
+    SHE = "SHE"
+    CDMKL = "KL"
+    PWKL = "PWKL"
+    MPWKL = "MPWKL"
 
     CHOICES = (
         (SEQ, "Sequencial"),
@@ -256,6 +266,10 @@ class CriteriaTypes(object):
         (APRULE, "APRULE - Para Arule"),
         (EPRULE, "EPRULE - Para Erule"),
         (WPRULE, "WPRULE - Para Wrule"),
+        (SHE, "SHE - Entropia Shenno da Habilidade do Sujeito"),
+        (CDMKL, "KL - Divergência Kullback-Leibler"),
+        (PWKL, "PWKL - Divergência Kullback-Leibler Ponderada"),
+        (MPWKL, "MPWKL - Divergência Kullback-Leibler Ponderada de Máxima Posterior"),
     )
 
 
