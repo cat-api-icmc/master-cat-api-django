@@ -266,7 +266,7 @@ class CriteriaTypes(object):
         (APRULE, "APRULE - Para Arule"),
         (EPRULE, "EPRULE - Para Erule"),
         (WPRULE, "WPRULE - Para Wrule"),
-        (SHE, "SHE - Entropia Shenno da Habilidade do Sujeito"),
+        (SHE, "SHE - Entropia Shennon da Habilidade do Sujeito"),
         (CDMKL, "KL - Divergência Kullback-Leibler"),
         (PWKL, "PWKL - Divergência Kullback-Leibler Ponderada"),
         (MPWKL, "MPWKL - Divergência Kullback-Leibler Ponderada de Máxima Posterior"),

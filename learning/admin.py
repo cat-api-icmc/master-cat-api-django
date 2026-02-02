@@ -107,6 +107,9 @@ class AssessmentAdmin(admin.ModelAdmin):
         ("Configurações", {"fields": [f.name for f in AssessmentConfig._meta.fields]}),
     )
     inlines = [UserPoolHasAssessmentInline]
+    
+    class Media:
+        js = ('admin/js/assessment_admin.js',)
 
     @mark_safe
     def dashboards(self, obj):
