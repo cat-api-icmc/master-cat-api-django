@@ -229,7 +229,7 @@ class CriteriaTypes(object):
     
     # CDM - critérios de seleção
     SHE = "SHE"
-    CDMKL = "KL"
+    CDMKL = "CDMKL"
     PWKL = "PWKL"
     MPWKL = "MPWKL"
 

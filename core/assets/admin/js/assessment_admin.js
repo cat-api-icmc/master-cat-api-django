@@ -23,6 +23,7 @@ const CRITERIA_LABELS = {
     'EPrule': 'EPRULE - Para Erule',
     'WPrule': 'WPRULE - Para Wrule',
     'SHE': 'SHE - Entropia Shennon da Habilidade do Sujeito',
+    'CDMKL': "KL - Divergência Kullback-Leibler",
     'PWKL': 'PWKL - Divergência Kullback-Leibler Ponderada',
     'MPWKL': 'MPWKL - Divergência Kullback-Leibler Ponderada de Máxima Posterior'
 };
@@ -43,7 +44,7 @@ const get_criterias = (model) => {
     }
 
     if (CDM_MODELS.includes(model)) {
-        return base_criterias.concat(['SHE', 'PWKL', 'MPWKL']);
+        return base_criterias.concat(['SHE', 'CDMKL', 'PWKL', 'MPWKL']);
     }
 
     return base_criterias;
