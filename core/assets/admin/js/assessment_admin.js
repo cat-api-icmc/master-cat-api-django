@@ -40,7 +40,7 @@ const get_criterias = (model) => {
     }
 
     if (MIRT_MODELS.includes(model)) {
-        return base_criterias.concat(['Drule', 'Trule', 'Arule', 'Erule', 'Wrule', 'DPrule', 'TPrule', 'APrule', 'EPrule', 'WPrule']);
+        return base_criterias.concat(['KL', 'KLn', 'Drule', 'Trule', 'Arule', 'Erule', 'Wrule', 'DPrule', 'TPrule', 'APrule', 'EPrule', 'WPrule']);
     }
 
     if (CDM_MODELS.includes(model)) {

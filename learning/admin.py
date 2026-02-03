@@ -104,7 +104,12 @@ class AssessmentAdmin(admin.ModelAdmin):
                 )
             },
         ),
-        ("Configurações", {"fields": [f.name for f in AssessmentConfig._meta.fields]}),
+        ("Configurações do Teste", {"fields": [
+            "type", "method", "criteria", "start_item", "thetas_start"
+        ]}),
+        ("Critérios de parada", {"fields": [
+            "min_items", "max_items", "min_sem", "delta_thetas", "max_time"
+        ]}),
     )
     inlines = [UserPoolHasAssessmentInline]
     

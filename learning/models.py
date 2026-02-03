@@ -25,17 +25,17 @@ class AssessmentType(object):
     CDM_GDINA = "GDINA"
 
     CHOICES = (
-        (IRT_4PL, "TRI - 4 Parâmetros"),
-        (IRT_3PL, "TRI - 3 Parâmetros"),
-        (IRT_2PL, "TRI - 2 Parâmetros"),
-        (IRT_1PL, "TRI - 1 Parâmetro"),
-        (MIRT_4PL, "TRI - 4 Parâmetros Multidimensionais"),
-        (MIRT_3PL, "TRI - 3 Parâmetros Multidimensionais"),
-        (MIRT_2PL, "TRI - 2 Parâmetros Multidimensionais"),
-        (MIRT_1PL, "TRI - 1 Parâmetro Multidimensional"),
+        (IRT_4PL, "TRI - 4PL"),
+        (IRT_3PL, "TRI - 3PL"),
+        (IRT_2PL, "TRI - 2PL"),
+        (IRT_1PL, "TRI - 1PL (Rasch)"),
+        (MIRT_4PL, "TRI - M4PL"),
+        (MIRT_3PL, "TRI - M3PL"),
+        (MIRT_2PL, "TRI - M2PL"),
+        (MIRT_1PL, "TRI - M1PL"),
         (CDM_DINA, "CDM - DINA"),
         (CDM_DINO, "CDM - DINO"),
-        (CDM_GDINA, "CDM - GDINA"),
+        (CDM_GDINA, "CDM - G-DINA"),
     )
 
     @classmethod
@@ -305,16 +305,24 @@ class AssessmentConfig(models.Model):
         help_text="Caso o índice seja 0, o primeiro item será escolhido aleatoriamente.",
     )
     criteria = models.CharField(
-        "Critério de Seleção",
+        "Critério de Seleção de Itens",
         max_length=255,
         default=CriteriaTypes.SEQ,
         choices=CriteriaTypes.CHOICES,
     )
     method = models.CharField(
-        "Método de Estimação",
+        "Método de Estimação de Proficiência",
         max_length=255,
         default=MethodTypes.MLE,
         choices=MethodTypes.CHOICES,
+    )
+    
+    # Parâmetros iniciais de theta
+    thetas_start = models.CharField(
+        "Thetas Iniciais",
+        max_length=255,
+        default="0",
+        help_text="Valor inicial de thetas. Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional.",
     )
 
     # Critérios de parada
@@ -330,19 +338,6 @@ class AssessmentConfig(models.Model):
         default="0",
         help_text="Valor de diferença entre thetas. Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional. O padrão '0' desabilita este critério de parada.",
     )
-    thetas_start = models.CharField(
-        "Thetas Iniciais",
-        max_length=255,
-        default="0",
-        help_text="Valor inicial de thetas. Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional.",
-    )
-    pattern_theta = models.CharField(
-        "Padrão de Theta",
-        max_length=255,
-        default="0",
-        help_text="Valor de theta inicial. Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional.",
-    )
-
     min_items = models.PositiveIntegerField("Mínimo de Itens", default=1)
     max_items = models.PositiveIntegerField("Máximo de Itens", default=10)
     max_time = models.PositiveIntegerField(
