@@ -302,7 +302,7 @@ class AssessmentConfig(models.Model):
     start_item = models.PositiveIntegerField(
         "Item Inicial",
         default=1,
-        help_text="Caso o índice seja 0, o primeiro item será escolhido aleatoriamente.",
+        help_text="Caso o índice seja 0, o primeiro item será escolhido de acordo com o critério de seleção de itens.",
     )
     criteria = models.CharField(
         "Critério de Seleção de Itens",

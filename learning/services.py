@@ -46,7 +46,7 @@ class UserAssessmentService(object):
 
     @classmethod
     def create(
-        cls, user_id: int, assessment: Assessment
+        cls, user_id: int, assessment: Assessment, user_thetas_start = None
     ) -> tuple[UserAssessment, bool]:
         questions = assessment.pool.questions.filter(
             questionpoolhasquestion__removed__isnull=True
@@ -60,6 +60,9 @@ class UserAssessmentService(object):
         questions_data = QuestionPlumberSerializer(
             questions, many=True, context={"question_params": question_params}
         ).data
+
+        if user_thetas_start is not None:
+            assessment.thetas_start = user_thetas_start
 
         assessment_config = AssessmentConfigSerializer(assessment).data
 

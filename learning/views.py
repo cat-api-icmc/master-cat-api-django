@@ -3,6 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from core.permissions import HasAPIAccess
 from plumber.client import PlumberClient
+from user.models import UserPoolHasUser
 from .models import (
     Alternative,
     Assessment,
@@ -58,6 +59,17 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
             return Response(
                 {"error": "Assessment not found."}, status=status.HTTP_404_NOT_FOUND
             )
+            
+        user_pool = UserPoolHasUser.objects.filter(
+            user_id=request.user.id,
+            pool__userpoolhasassessment__assessment_id=assessment.id,
+        ).first()
+        
+        if not user_pool:
+            return Response(
+                {"error": "User not enrolled in the assessment's pool."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         created = False
         user_assessment = UserAssessmentService.get_in_progress_assessment(
@@ -66,7 +78,7 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
 
         if not user_assessment:
             user_assessment, success = UserAssessmentService.create(
-                request.user.id, assessment
+                request.user.id, assessment, user_thetas_start=user_pool.thetas_start
             )
             if not success:
                 return Response(**user_assessment)

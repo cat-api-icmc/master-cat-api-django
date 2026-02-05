@@ -132,7 +132,7 @@ class AssessmentConfigSerializer(serializers.ModelSerializer):
         )
 
     def get_start_item(self, obj: AssessmentConfig):
-        return obj.start_item or "random"
+        return obj.start_item or obj.criteria
 
     def get_min_sem(self, obj: AssessmentConfig):
         return obj.min_sem_value
