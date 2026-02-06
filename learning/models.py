@@ -368,10 +368,6 @@ class AssessmentConfig(models.Model):
         return self.__get_number_or_list(self.thetas_start)
 
     @property
-    def pattern_theta_value(self) -> Union[List[float], float]:
-        return self.__get_number_or_list(self.pattern_theta)
-
-    @property
     def fixed_question_count(self) -> int:
         return self.min_items if self.min_items == self.max_items else 0
 

@@ -122,7 +122,6 @@ class AssessmentConfigSerializer(serializers.ModelSerializer):
     min_sem = serializers.SerializerMethodField()
     delta_thetas = serializers.SerializerMethodField()
     thetas_start = serializers.SerializerMethodField()
-    pattern_theta = serializers.SerializerMethodField()
     model_type = serializers.CharField(source="type")
 
     class Meta:
@@ -142,6 +141,3 @@ class AssessmentConfigSerializer(serializers.ModelSerializer):
 
     def get_thetas_start(self, obj: AssessmentConfig):
         return obj.thetas_start_value
-
-    def get_pattern_theta(self, obj: AssessmentConfig):
-        return obj.pattern_theta_value
