@@ -1,20 +1,33 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
-from learning.forms import AssessmentForm, QuestionParamsInlineForm
+from learning.forms import (
+    AssessmentForm,
+    QuestionBalancerInlineFormSet,
+    QuestionParamsInlineForm,
+)
 from learning.services import QuestionPoolService
 from user.models import UserPoolHasAssessment
 from .models import (
     Alternative,
     Assessment,
-    AssessmentConfig,
     MirtDesignData,
     Question,
+    QuestionBalancer,
     QuestionParams,
     QuestionPool,
     QuestionPoolHasQuestion,
     QuestionSuperPool,
+    QuestionTag,
+    ShadowTestConfig,
 )
+
+
+@admin.register(QuestionTag)
+class QuestionTagAdmin(admin.ModelAdmin):
+    search_fields = ("name",)
+    list_display = ("name", "id", "uuid")
+    readonly_fields = ("id", "uuid")
 
 
 class AlternativeInline(admin.TabularInline):
@@ -36,8 +49,9 @@ class QuestionAdmin(admin.ModelAdmin):
     readonly_fields = ("id", "uuid")
     actions = ["create_pool"]
     inlines = [AlternativeInline, QuestionParamsInline]
+    raw_id_fields = ("tag",)
     fieldsets = (
-        (None, {"fields": ("id", "uuid")}),
+        (None, {"fields": ("id", "uuid", "tag")}),
         ("Conteúdo", {"fields": ("statement",)}),
     )
 
@@ -77,6 +91,18 @@ class QuestionSuperPoolAdmin(QuestionPoolAdmin):
         return qs.filter(super_pool=True)
 
 
+class QuestionBalancerInline(admin.TabularInline):
+    raw_id_fields = ("question_tag",)
+    model = QuestionBalancer
+    extra = 1
+    formset = QuestionBalancerInlineFormSet
+
+
+class ShadowTestConfigInline(admin.TabularInline):
+    model = ShadowTestConfig
+    extra = 1
+
+
 class UserPoolHasAssessmentInline(admin.TabularInline):
     model = UserPoolHasAssessment
     extra = 1
@@ -104,17 +130,37 @@ class AssessmentAdmin(admin.ModelAdmin):
                 )
             },
         ),
-        ("Configurações do Teste", {"fields": [
-            "type", "method", "criteria", "start_item", "thetas_start"
-        ]}),
-        ("Critérios de parada", {"fields": [
-            "min_items", "max_items", "min_sem", "delta_thetas", "max_time"
-        ]}),
+        (
+            "Configurações do Teste",
+            {
+                "fields": [
+                    "type",
+                    "method",
+                    "criteria",
+                    "start_item",
+                    "thetas_start",
+                ]
+            },
+        ),
+        ("Controle de Exposição", {"fields": ["exposure_control", "exposure_values"]}),
+        (
+            "Critérios de parada",
+            {
+                "fields": [
+                    "min_items",
+                    "max_items",
+                    "min_sem",
+                    "delta_thetas",
+                    "threshhold",
+                    "max_time",
+                ]
+            },
+        ),
     )
-    inlines = [UserPoolHasAssessmentInline]
-    
+    inlines = [UserPoolHasAssessmentInline, QuestionBalancerInline, ShadowTestConfigInline]
+
     class Media:
-        js = ('admin/js/assessment_admin.js',)
+        js = ("admin/js/assessment_admin.js",)
 
     @mark_safe
     def dashboards(self, obj):

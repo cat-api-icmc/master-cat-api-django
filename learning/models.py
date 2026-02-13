@@ -56,9 +56,25 @@ class AssessmentType(object):
         return type_ in (cls.CDM_DINA, cls.CDM_DINO, cls.CDM_GDINA)
 
 
+class QuestionTag(SoftDeletableModel):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True)
+    name = models.CharField("Nome", max_length=255)
+
+    class Meta:
+        db_table = "question_tags"
+        verbose_name = "Tag de Questão"
+        verbose_name_plural = "Tags de Questões"
+
+    def __str__(self) -> str:
+        return f"{self.pk} {self.name}"
+
+
 class Question(SoftDeletableModel, CKEditorModelMixin):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True)
     statement = CKEditor5Field("Enunciado")
+    tag = models.ForeignKey(
+        QuestionTag, on_delete=models.SET_NULL, related_name="questions", null=True
+    )
 
     class Meta:
         db_table = "questions"
@@ -226,7 +242,7 @@ class CriteriaTypes(object):
     APRULE = "APrule"
     EPRULE = "EPrule"
     WPRULE = "WPrule"
-    
+
     # CDM - critérios de seleção
     SHE = "SHE"
     CDMKL = "CDMKL"
@@ -285,6 +301,16 @@ class MethodTypes(object):
     )
 
 
+class ExposureControlTypes(object):
+    RANDOMESQUE = "RE"
+    SYMPSON_HETTER = "SH"
+
+    CHOICES = (
+        (RANDOMESQUE, "Randomesque"),
+        (SYMPSON_HETTER, "Sympson-Hetter"),
+    )
+
+
 class AssessmentConfig(models.Model):
     """
     Fields used to store the configuration of an assessment.
@@ -316,7 +342,7 @@ class AssessmentConfig(models.Model):
         default=MethodTypes.MLE,
         choices=MethodTypes.CHOICES,
     )
-    
+
     # Parâmetros iniciais de theta
     thetas_start = models.CharField(
         "Thetas Iniciais",
@@ -325,7 +351,7 @@ class AssessmentConfig(models.Model):
         help_text="Valor inicial de thetas. Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional.",
     )
 
-    # Critérios de parada
+    # Critérios de parada TRI
     min_sem = models.CharField(
         "Mínimo de SEM",
         max_length=255,
@@ -338,6 +364,16 @@ class AssessmentConfig(models.Model):
         default="0",
         help_text="Valor de diferença entre thetas. Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional. O padrão '0' desabilita este critério de parada.",
     )
+
+    # Critério de parada CDM
+    threshhold = models.CharField(
+        "Critério de Parada CDM",
+        max_length=255,
+        default="0",
+        help_text="Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional. O padrão '0' desabilita este critério de parada.",
+    )
+
+    # Critérios de parada Geral
     min_items = models.PositiveIntegerField("Mínimo de Itens", default=1)
     max_items = models.PositiveIntegerField("Máximo de Itens", default=10)
     max_time = models.PositiveIntegerField(
@@ -346,6 +382,22 @@ class AssessmentConfig(models.Model):
         null=True,
         blank=True,
         help_text="Tempo máximo em segundos. Deixe em branco para ilimitado",
+    )
+
+    exposure_control = models.CharField(
+        "Método de Controle de Exposição de Itens",
+        max_length=255,
+        default=None,
+        blank=True,
+        null=True,
+        choices=ExposureControlTypes.CHOICES,
+        help_text="Método utilizado para controle de exposição de itens. Deixe em branco para desabilitar o controle de exposição.",
+    )
+    exposure_values = models.CharField(
+        "Valores de Controle de Exposição",
+        max_length=255,
+        default="0",
+        help_text="Lista de valores, separados por vírgula, para controle de exposição de itens.",
     )
 
     class Meta:
@@ -366,6 +418,13 @@ class AssessmentConfig(models.Model):
     @property
     def thetas_start_value(self) -> Union[List[float], float]:
         return self.__get_number_or_list(self.thetas_start)
+
+    @property
+    def exposure_values_list(self) -> List[Union[float, int]]:
+        cast = (
+            int if self.exposure_control == ExposureControlTypes.RANDOMESQUE else float
+        )
+        return list(map(cast, self.exposure_values.split(",")))
 
     @property
     def fixed_question_count(self) -> int:
@@ -419,6 +478,60 @@ class Assessment(SoftDeletableModel, AssessmentConfig):
         return self.pool.questions.filter(
             questionpoolhasquestion__removed__isnull=True
         ).count()
+
+
+class QuestionBalancer(SoftDeletableModel):
+    assessment = models.ForeignKey(
+        Assessment, on_delete=models.CASCADE, related_name="question_balancers"
+    )
+    question_tag = models.ForeignKey(
+        QuestionTag, on_delete=models.CASCADE, related_name="question_balancers"
+    )
+    weight = models.FloatField(
+        "Peso",
+        default=1.0,
+        help_text="Valor entre 0 e 1 que representa a importância relativa deste tag de questão na seleção de itens. A soma dos pesos para um mesmo assessment deve ser igual a 1.",
+    )
+
+    class Meta:
+        db_table = "question_balancers"
+        verbose_name = "Balanceador de Questões"
+        verbose_name_plural = "Balanceadores de Questões"
+
+
+class ShadowTestConfig(SoftDeletableModel):
+    OPERATORS_CHOICES = (
+        ("<=", "Menor ou igual a"),
+        (">=", "Maior ou igual a"),
+        ("==", "Igual a"),
+    )
+
+    assessment = models.ForeignKey(
+        Assessment, on_delete=models.CASCADE, related_name="shadow_test_config"
+    )
+    itens_query = models.CharField(
+        "Query de Itens",
+        max_length=255,
+        default="",
+        help_text="Query para seleção de itens para o teste sombra.",
+    )
+    operator = models.CharField(
+        "Operador de Comparação",
+        max_length=2,
+        choices=OPERATORS_CHOICES,
+        default="==",
+        help_text="Operador utilizado para comparar a métrica do teste sombra com o valor de comparação.",
+    )
+    value = models.FloatField(
+        "Valor de Comparação",
+        default=0.0,
+        help_text="Valor utilizado para comparar a métrica do teste sombra, de acordo com o operador selecionado.",
+    )
+    
+    class Meta:
+        db_table = "shadow_test_configs"
+        verbose_name = "Configuração de Teste Sombra"
+        verbose_name_plural = "Configurações de Teste Sombra"
 
 
 class UserAssessment(SoftDeletableModel):
