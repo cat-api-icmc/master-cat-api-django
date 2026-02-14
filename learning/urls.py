@@ -1,7 +1,7 @@
 from rest_framework import routers
 from django.conf.urls import include
 from django.urls import path
-from .views import *
+from .views import AssessmentViewset, UserAssessmentViewset
 
 
 router = routers.DefaultRouter()

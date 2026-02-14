@@ -69,6 +69,14 @@ class UserPool(SoftDeletableModel):
 class UserPoolHasUser(SoftDeletableModel):
     pool = models.ForeignKey(UserPool, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    thetas_start = models.CharField(
+        "Thetas Iniciais",
+        max_length=255,
+        default=None,
+        null=True,
+        blank=True,
+        help_text="Valor inicial de thetas desse Aluno para as Avaliações dessa turma. Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional.",
+    )
 
     class Meta:
         db_table = "user_pool_has_users"

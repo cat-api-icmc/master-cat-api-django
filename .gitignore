@@ -1,5 +1,5 @@
-/venv
-/env
+/*env
+/log
 /mydatabase
 .vscode/
 *__pycache__*

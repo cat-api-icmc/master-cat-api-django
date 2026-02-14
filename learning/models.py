@@ -8,15 +8,98 @@ from user.models import StudentUser
 from datetime import timedelta
 
 
+class AssessmentType(object):
+    IRT_4PL = "4PL"
+    IRT_3PL = "3PL"
+    IRT_2PL = "2PL"
+    IRT_1PL = "1PL"
+
+    MIRT_4PL = "M4PL"
+    MIRT_3PL = "M3PL"
+    MIRT_2PL = "M2PL"
+    MIRT_1PL = "M1PL"
+
+    CDM_DINA = "DINA"
+    CDM_DINO = "DINO"
+
+    CDM_GDINA = "GDINA"
+
+    CHOICES = (
+        (IRT_4PL, "TRI - 4PL"),
+        (IRT_3PL, "TRI - 3PL"),
+        (IRT_2PL, "TRI - 2PL"),
+        (IRT_1PL, "TRI - 1PL (Rasch)"),
+        (MIRT_4PL, "TRI - M4PL"),
+        (MIRT_3PL, "TRI - M3PL"),
+        (MIRT_2PL, "TRI - M2PL"),
+        (MIRT_1PL, "TRI - M1PL"),
+        (CDM_DINA, "CDM - DINA"),
+        (CDM_DINO, "CDM - DINO"),
+        (CDM_GDINA, "CDM - G-DINA"),
+    )
+
+    @classmethod
+    def is_irt(cls, type_: str) -> bool:
+        return type_ in (
+            cls.IRT_1PL,
+            cls.IRT_2PL,
+            cls.IRT_3PL,
+            cls.IRT_4PL,
+            cls.MIRT_1PL,
+            cls.MIRT_2PL,
+            cls.MIRT_3PL,
+            cls.MIRT_4PL,
+        )
+
+    @classmethod
+    def is_cdm(cls, type_: str) -> bool:
+        return type_ in (cls.CDM_DINA, cls.CDM_DINO, cls.CDM_GDINA)
+
+
+class QuestionTag(SoftDeletableModel):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True)
+    name = models.CharField("Nome", max_length=255)
+
+    class Meta:
+        db_table = "question_tags"
+        verbose_name = "Tag de Questão"
+        verbose_name_plural = "Tags de Questões"
+
+    def __str__(self) -> str:
+        return f"{self.pk} {self.name}"
+
+
+class Question(SoftDeletableModel, CKEditorModelMixin):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True)
+    statement = CKEditor5Field("Enunciado")
+    tag = models.ForeignKey(
+        QuestionTag, on_delete=models.SET_NULL, related_name="questions", null=True
+    )
+
+    class Meta:
+        db_table = "questions"
+        verbose_name = "Questão"
+        verbose_name_plural = "Questões"
+
+    def __str__(self) -> str:
+        return f"{self.pk} - {str(self.statement)[:10]}..."
+
+    def save(self, *args, **kwargs):
+        self.handle_ck_editor_fields()
+        return super().save(*args, **kwargs)
+
+
 class IRTParams(models.Model):
     """
-    Fields used to store the parameters for the IRT model.
+    Fields used to store the parameters for the IRT models.
     ...
     """
 
-    discrimination = models.FloatField("Discriminação", default=1.0)
-    difficulty = models.FloatField("Dificuldade", default=0.0)
-    guess = models.FloatField("Chute", default=0.0)
+    irt_difficulty = models.FloatField("Dificuldade", default=0.0)
+    irt_discrimination = models.FloatField("Discriminação", default=1.0)
+    irt_guess = models.FloatField("Chute", default=0.0)
+    irt_upper_asymptote = models.FloatField("Assimptota Superior", default=1.0)
+    irt_mparams = models.JSONField("Parâmetros Multidimensionais", default=list)
 
     class Meta:
         abstract = True
@@ -28,38 +111,40 @@ class CDMParams(models.Model):
     ...
     """
 
-    # slipping = models.FloatField("Deslize", default=0.0)
-    # guessing = models.FloatField("Chute", default=0.0)
+    cdm_slipping = models.FloatField("Deslize", default=0.0)
+    cdm_guessing = models.FloatField("Chute", default=0.0)
+    cdm_mparams = models.JSONField("Parâmetros Multidimensionais", default=list)
+    cdm_qmatrix = models.JSONField("Valores para a Matriz Q", default=list)
 
     class Meta:
         abstract = True
 
 
-class QuestionMetadata(IRTParams, CDMParams):
+class QuestionParams(SoftDeletableModel, IRTParams, CDMParams):
     """
     Merge Class to store CAT metadata about a question.
     ...
     """
 
-    class Meta:
-        abstract = True
-
-
-class Question(SoftDeletableModel, QuestionMetadata, CKEditorModelMixin):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True)
-    statement = CKEditor5Field("Enunciado")
+    model = models.CharField(
+        "Modelo",
+        max_length=255,
+        choices=AssessmentType.CHOICES,
+        default=AssessmentType.IRT_3PL,
+    )
+    question = models.ForeignKey(
+        Question, on_delete=models.CASCADE, related_name="params"
+    )
 
     class Meta:
-        db_table = "questions"
-        verbose_name = "Questão"
-        verbose_name_plural = "Questões"
+        db_table = "question_params"
+        verbose_name = "Parâmetros de Questão"
+        verbose_name_plural = "Parâmetros de Questões"
+        unique_together = ("model", "question")
 
     def __str__(self) -> str:
-        return f"{self.pk} - {self.statement[:10]}..."
-
-    def save(self, *args, **kwargs):
-        self.handle_ck_editor_fields()
-        return super().save(*args, **kwargs)
+        return self.model.__str__()
 
 
 class Alternative(SoftDeletableModel, CKEditorModelMixin):
@@ -76,7 +161,7 @@ class Alternative(SoftDeletableModel, CKEditorModelMixin):
         verbose_name_plural = "Alternativas"
 
     def __str__(self) -> str:
-        return f"{self.pk} - {self.text[:10]}..."
+        return f"{self.pk} - {str(self.text)[:10]}..."
 
     def save(self, *args, **kwargs):
         self.handle_ck_editor_fields()
@@ -124,52 +209,45 @@ class QuestionPoolHasQuestion(SoftDeletableModel):
         verbose_name_plural = "Questões nos Bancos de Questões"
 
 
-class AssessmentType(object):
-    IRT_3PL = "3PL"
-    IRT_2PL = "2PL"
-    IRT_1PL = "1PL"
-
-    CDM_DINA = "DINA"
-    CDM_DINO = "DINO"
-
-    CHOICES = (
-        (IRT_3PL, "TRI - 3 Parâmetros"),
-        (IRT_2PL, "TRI - 2 Parâmetros"),
-        (IRT_1PL, "TRI - 1 Parâmetro"),
-        (CDM_DINA, "CDM - DINA"),
-        (CDM_DINO, "CDM - DINO"),
-    )
-
-
 class CriteriaTypes(object):
+    # critérios variados
     SEQ = "seq"
     RANDOM = "random"
 
+    # TRI - critérios baseados em informação
     MI = "MI"
     MEPV = "MEPV"
     MLWI = "MLWI"
     MPWI = "MPWI"
     MEI = "MEI"
 
+    # TRI - critérios baseados em divergência de Kullback-Leibler
     KL = "KL"
     KLn = "KLn"
-
-    IKLP = "IKLP"
     IKL = "IKL"
     IKLn = "IKLn"
+    IKLP = "IKLP"
     IKLPn = "IKLPn"
 
+    # TRI - critérios de regras de informação para testes multidimensionais
     DRULE = "Drule"
     TRULE = "Trule"
     ARULE = "Arule"
     ERULE = "Erule"
     WRULE = "Wrule"
 
+    # TRI - variantes para regras de informação
     DPRULE = "DPrule"
     TPRULE = "TPrule"
     APRULE = "APrule"
     EPRULE = "EPrule"
     WPRULE = "WPrule"
+
+    # CDM - critérios de seleção
+    SHE = "SHE"
+    CDMKL = "CDMKL"
+    PWKL = "PWKL"
+    MPWKL = "MPWKL"
 
     CHOICES = (
         (SEQ, "Sequencial"),
@@ -204,6 +282,32 @@ class CriteriaTypes(object):
         (APRULE, "APRULE - Para Arule"),
         (EPRULE, "EPRULE - Para Erule"),
         (WPRULE, "WPRULE - Para Wrule"),
+        (SHE, "SHE - Entropia Shennon da Habilidade do Sujeito"),
+        (CDMKL, "KL - Divergência Kullback-Leibler"),
+        (PWKL, "PWKL - Divergência Kullback-Leibler Ponderada"),
+        (MPWKL, "MPWKL - Divergência Kullback-Leibler Ponderada de Máxima Posterior"),
+    )
+
+
+class MethodTypes(object):
+    MAP = "MAP"
+    EAP = "EAP"
+    MLE = "MLE"
+
+    CHOICES = (
+        (MAP, "MAP - Máxima a Posteriori"),
+        (EAP, "EAP - Esperança a Posteriori"),
+        (MLE, "MLE - Máxima Verossimilhança"),
+    )
+
+
+class ExposureControlTypes(object):
+    RANDOMESQUE = "RE"
+    SYMPSON_HETTER = "SH"
+
+    CHOICES = (
+        (RANDOMESQUE, "Randomesque"),
+        (SYMPSON_HETTER, "Sympson-Hetter"),
     )
 
 
@@ -224,16 +328,30 @@ class AssessmentConfig(models.Model):
     start_item = models.PositiveIntegerField(
         "Item Inicial",
         default=1,
-        help_text="Caso o índice seja 0, o primeiro item será escolhido aleatoriamente.",
+        help_text="Caso o índice seja 0, o primeiro item será escolhido de acordo com o critério de seleção de itens.",
     )
     criteria = models.CharField(
-        "Critério de Seleção",
+        "Critério de Seleção de Itens",
         max_length=255,
         default=CriteriaTypes.SEQ,
         choices=CriteriaTypes.CHOICES,
     )
+    method = models.CharField(
+        "Método de Estimação de Proficiência",
+        max_length=255,
+        default=MethodTypes.MLE,
+        choices=MethodTypes.CHOICES,
+    )
 
-    # Critérios de parada
+    # Parâmetros iniciais de theta
+    thetas_start = models.CharField(
+        "Thetas Iniciais",
+        max_length=255,
+        default="0",
+        help_text="Valor inicial de thetas. Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional.",
+    )
+
+    # Critérios de parada TRI
     min_sem = models.CharField(
         "Mínimo de SEM",
         max_length=255,
@@ -246,19 +364,16 @@ class AssessmentConfig(models.Model):
         default="0",
         help_text="Valor de diferença entre thetas. Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional. O padrão '0' desabilita este critério de parada.",
     )
-    thetas_start = models.CharField(
-        "Thetas Iniciais",
+
+    # Critério de parada CDM
+    threshhold = models.CharField(
+        "Critério de Parada CDM",
         max_length=255,
         default="0",
-        help_text="Valor inicial de thetas. Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional.",
-    )
-    pattern_theta = models.CharField(
-        "Padrão de Theta",
-        max_length=255,
-        default="0",
-        help_text="Valor de theta inicial. Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional.",
+        help_text="Esse campo aceita um único valor ou uma lista de valores separados por vírgula (,) em caso de teste multidimensional. O padrão '0' desabilita este critério de parada.",
     )
 
+    # Critérios de parada Geral
     min_items = models.PositiveIntegerField("Mínimo de Itens", default=1)
     max_items = models.PositiveIntegerField("Máximo de Itens", default=10)
     max_time = models.PositiveIntegerField(
@@ -267,6 +382,23 @@ class AssessmentConfig(models.Model):
         null=True,
         blank=True,
         help_text="Tempo máximo em segundos. Deixe em branco para ilimitado",
+    )
+
+    exposure_control = models.CharField(
+        "Método de Controle de Exposição de Itens",
+        max_length=255,
+        default=None,
+        blank=True,
+        null=True,
+        choices=ExposureControlTypes.CHOICES,
+        help_text="Método utilizado para controle de exposição de itens. Deixe em branco para desabilitar o controle de exposição.",
+    )
+    exposure_values = models.CharField(
+        "Valores de Controle de Exposição",
+        max_length=255,
+        default="0",
+        blank=True,
+        help_text="Lista de valores, separados por vírgula, para controle de exposição de itens.",
     )
 
     class Meta:
@@ -289,12 +421,23 @@ class AssessmentConfig(models.Model):
         return self.__get_number_or_list(self.thetas_start)
 
     @property
-    def pattern_theta_value(self) -> Union[List[float], float]:
-        return self.__get_number_or_list(self.pattern_theta)
+    def exposure_values_list(self) -> List[Union[float, int]]:
+        cast = (
+            int if self.exposure_control == ExposureControlTypes.RANDOMESQUE else float
+        )
+        return list(map(cast, self.exposure_values.split(",")))
 
     @property
     def fixed_question_count(self) -> int:
         return self.min_items if self.min_items == self.max_items else 0
+
+    @property
+    def is_irt(self) -> bool:
+        return AssessmentType.is_irt(self.type)
+
+    @property
+    def is_cdm(self) -> bool:
+        return AssessmentType.is_cdm(self.type)
 
 
 class Assessment(SoftDeletableModel, AssessmentConfig):
@@ -338,6 +481,60 @@ class Assessment(SoftDeletableModel, AssessmentConfig):
         ).count()
 
 
+class QuestionBalancer(SoftDeletableModel):
+    assessment = models.ForeignKey(
+        Assessment, on_delete=models.CASCADE, related_name="question_balancers"
+    )
+    question_tag = models.ForeignKey(
+        QuestionTag, on_delete=models.CASCADE, related_name="question_balancers"
+    )
+    weight = models.FloatField(
+        "Peso",
+        default=1.0,
+        help_text="Valor entre 0 e 1 que representa a importância relativa deste tag de questão na seleção de itens. A soma dos pesos para um mesmo assessment deve ser igual a 1.",
+    )
+
+    class Meta:
+        db_table = "question_balancers"
+        verbose_name = "Balanceador de Conteúdo"
+        verbose_name_plural = "Balanceadores de Conteúdo"
+
+
+class ShadowTestConfig(SoftDeletableModel):
+    OPERATORS_CHOICES = (
+        ("<=", "Menor ou igual a"),
+        (">=", "Maior ou igual a"),
+        ("==", "Igual a"),
+    )
+
+    assessment = models.ForeignKey(
+        Assessment, on_delete=models.CASCADE, related_name="shadow_test_config"
+    )
+    itens_query = models.CharField(
+        "Query de Itens",
+        max_length=255,
+        default="",
+        help_text="Query para seleção de itens para o teste sombra.",
+    )
+    operator = models.CharField(
+        "Operador de Comparação",
+        max_length=2,
+        choices=OPERATORS_CHOICES,
+        default="==",
+        help_text="Operador utilizado para comparar a métrica do teste sombra com o valor de comparação.",
+    )
+    value = models.IntegerField(
+        "Valor de Comparação",
+        default=0,
+        help_text="Valor utilizado para comparar a métrica do teste sombra, de acordo com o operador selecionado.",
+    )
+    
+    class Meta:
+        db_table = "shadow_test_configs"
+        verbose_name = "Configuração de Teste Sombra"
+        verbose_name_plural = "Configurações de Teste Sombra"
+
+
 class UserAssessment(SoftDeletableModel):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -365,7 +562,11 @@ class UserAssessment(SoftDeletableModel):
         db_table = "user_has_assessments"
         verbose_name = "Avaliação do Usuário"
         verbose_name_plural = "Avaliações dos Usuários"
-        
+
+    @property
+    def in_progress(self) -> bool:
+        return self.status == self.IN_PROGRESS
+
     @property
     def completion_time(self) -> int:
         if self.finished and self.created:
@@ -402,12 +603,12 @@ class MirtDesignData(SoftDeletableModel):
             return f"{self.pk} | u: {self.user_assessment.user} | a: {self.user_assessment.assessment}"
         return f"{self.pk} - MIRT Design Data"
 
-    def __last(self, iter: list) -> float:
-        return iter[-1] if len(iter) else 0.0
+    def __last(self, iter_: list) -> float:
+        return iter_[-1] if len(iter_) else 0.0
 
     def __len__(self) -> int:
         return len(self.item_history)
-    
+
     @property
     def score(self) -> float:
         return sum(self.response_history) / len(self.response_history)

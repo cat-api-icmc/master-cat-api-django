@@ -1,15 +1,44 @@
+from ipaddress import collapse_addresses
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
-from learning.forms import AssessmentForm
+from learning.forms import (
+    AssessmentForm,
+    QuestionBalancerInlineFormSet,
+    QuestionParamsInlineForm,
+)
 from learning.services import QuestionPoolService
 from user.models import UserPoolHasAssessment
-from .models import *
+from .models import (
+    Alternative,
+    Assessment,
+    Question,
+    QuestionBalancer,
+    QuestionParams,
+    QuestionPool,
+    QuestionPoolHasQuestion,
+    QuestionSuperPool,
+    QuestionTag,
+    ShadowTestConfig,
+)
+
+
+@admin.register(QuestionTag)
+class QuestionTagAdmin(admin.ModelAdmin):
+    search_fields = ("name",)
+    list_display = ("name", "id", "uuid")
+    readonly_fields = ("id", "uuid")
 
 
 class AlternativeInline(admin.TabularInline):
     model = Alternative
     extra = 1
+
+
+class QuestionParamsInline(admin.StackedInline):
+    model = QuestionParams
+    extra = 0
+    form = QuestionParamsInlineForm
 
 
 @admin.register(Question)
@@ -19,11 +48,10 @@ class QuestionAdmin(admin.ModelAdmin):
     list_display = ("uuid", "id", "__str__")
     readonly_fields = ("id", "uuid")
     actions = ["create_pool"]
-    inlines = [AlternativeInline]
+    inlines = [AlternativeInline, QuestionParamsInline]
+    raw_id_fields = ("tag",)
     fieldsets = (
-        (None, {"fields": ("id", "uuid")}),
-        ("Parâmetros IRT", {"fields": [f.name for f in IRTParams._meta.fields]}),
-        ("Parâmetros CDM", {"fields": [f.name for f in CDMParams._meta.fields]}),
+        (None, {"fields": ("id", "uuid", "tag")}),
         ("Conteúdo", {"fields": ("statement",)}),
     )
 
@@ -37,6 +65,7 @@ class QuestionInline(admin.TabularInline):
     model = QuestionPoolHasQuestion
     fields = ("question", "order")
     extra = 1
+    raw_id_fields = ("question",)
 
 
 @admin.register(QuestionPool)
@@ -60,6 +89,18 @@ class QuestionSuperPoolAdmin(QuestionPoolAdmin):
     def get_queryset(self, request):
         qs = super(QuestionSuperPoolAdmin, self).get_queryset(request)
         return qs.filter(super_pool=True)
+
+
+class QuestionBalancerInline(admin.TabularInline):
+    raw_id_fields = ("question_tag",)
+    model = QuestionBalancer
+    extra = 1
+    formset = QuestionBalancerInlineFormSet
+
+
+class ShadowTestConfigInline(admin.TabularInline):
+    model = ShadowTestConfig
+    extra = 1
 
 
 class UserPoolHasAssessmentInline(admin.TabularInline):
@@ -86,12 +127,40 @@ class AssessmentAdmin(admin.ModelAdmin):
                     "finish",
                     "pool",
                     "dashboards",
-                )
+                ),
             },
         ),
-        ("Configurações", {"fields": [f.name for f in AssessmentConfig._meta.fields]}),
+        (
+            "CONFIGURAÇÕES DO TESTE",
+            {
+                "fields": [
+                    "type",
+                    "method",
+                    "criteria",
+                    "start_item",
+                    "thetas_start",
+                ]
+            },
+        ),
+        (
+            "CRITÉRIOS DE PARADA",
+            {
+                "fields": [
+                    "min_items",
+                    "max_items",
+                    "min_sem",
+                    "delta_thetas",
+                    "threshhold",
+                    "max_time",
+                ]
+            },
+        ),
+        ("CONTROLE DE EXPOSIÇÃO", {"fields": ["exposure_control", "exposure_values"],}),
     )
-    inlines = [UserPoolHasAssessmentInline]
+    inlines = [QuestionBalancerInline, ShadowTestConfigInline, UserPoolHasAssessmentInline]
+
+    class Media:
+        js = ("admin/js/assessment_admin.js",)
 
     @mark_safe
     def dashboards(self, obj):
@@ -103,76 +172,3 @@ class AssessmentAdmin(admin.ModelAdmin):
 
     dashboards.short_description = "Dashboards"
     dashboards.allow_tags = True
-
-
-@admin.register(MirtDesignData)
-class MirtDesignDataAdmin(admin.ModelAdmin):
-    fieldsets = (
-        (None, {"fields": ("user", "assessment")}),
-        (
-            "Info",
-            {
-                "fields": (
-                    "item_history",
-                    "response_history",
-                    "theta_history",
-                    "standard_error_history",
-                    "summary",
-                )
-            },
-        ),
-    )
-
-    @mark_safe
-    def summary(self, obj: MirtDesignData):
-        item_history = [
-            (
-                ih,
-                obj.response_history[ih - 1],
-                obj.theta_history[i + 1],
-                obj.standard_error_history[i + 1],
-                obj.item_time_history[i],
-            )
-            for i, ih in enumerate(obj.item_history)
-            if ih != "NA"
-        ]
-
-        contents = "".join(
-            [
-                f"""
-            <tr>
-                <td>{ih}</td>
-                <td>{r}</td>
-                <td>{t}</td>
-                <td>{se}</td>
-                <td>{it:.2f}</td>
-            </tr>
-        """
-                for ih, r, t, se, it in item_history
-            ]
-        )
-
-        return f"""
-        <table>
-            <tr>
-                <th>Item</th>
-                <th>Resposta</th>
-                <th>Theta</th>
-                <th>Erro Padrão</th>
-                <th>Tempo de Resposta (s)</th>
-            </tr>
-            {contents}
-        </table>
-        """
-
-    def user(self, obj):
-        return obj.user_assessment.user.__str__()
-
-    def assessment(self, obj):
-        return obj.user_assessment.assessment.__str__()
-
-    def has_change_permission(self, *args, **kwargs):
-        return False
-
-    summary.short_description = "Resumo da Avaliação"
-    summary.allow_tags = True
