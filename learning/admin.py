@@ -1,3 +1,4 @@
+from ipaddress import collapse_addresses
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
@@ -11,7 +12,6 @@ from user.models import UserPoolHasAssessment
 from .models import (
     Alternative,
     Assessment,
-    MirtDesignData,
     Question,
     QuestionBalancer,
     QuestionParams,
@@ -127,11 +127,11 @@ class AssessmentAdmin(admin.ModelAdmin):
                     "finish",
                     "pool",
                     "dashboards",
-                )
+                ),
             },
         ),
         (
-            "Configurações do Teste",
+            "CONFIGURAÇÕES DO TESTE",
             {
                 "fields": [
                     "type",
@@ -142,9 +142,8 @@ class AssessmentAdmin(admin.ModelAdmin):
                 ]
             },
         ),
-        ("Controle de Exposição", {"fields": ["exposure_control", "exposure_values"]}),
         (
-            "Critérios de parada",
+            "CRITÉRIOS DE PARADA",
             {
                 "fields": [
                     "min_items",
@@ -156,8 +155,9 @@ class AssessmentAdmin(admin.ModelAdmin):
                 ]
             },
         ),
+        ("CONTROLE DE EXPOSIÇÃO", {"fields": ["exposure_control", "exposure_values"],}),
     )
-    inlines = [UserPoolHasAssessmentInline, QuestionBalancerInline, ShadowTestConfigInline]
+    inlines = [QuestionBalancerInline, ShadowTestConfigInline, UserPoolHasAssessmentInline]
 
     class Media:
         js = ("admin/js/assessment_admin.js",)
@@ -172,76 +172,3 @@ class AssessmentAdmin(admin.ModelAdmin):
 
     dashboards.short_description = "Dashboards"
     dashboards.allow_tags = True
-
-
-@admin.register(MirtDesignData)
-class MirtDesignDataAdmin(admin.ModelAdmin):
-    fieldsets = (
-        (None, {"fields": ("user", "assessment")}),
-        (
-            "Info",
-            {
-                "fields": (
-                    "item_history",
-                    "response_history",
-                    "theta_history",
-                    "standard_error_history",
-                    "summary",
-                )
-            },
-        ),
-    )
-
-    @mark_safe
-    def summary(self, obj: MirtDesignData):
-        item_history = [
-            (
-                ih,
-                obj.response_history[ih - 1],
-                obj.theta_history[i + 1],
-                obj.standard_error_history[i + 1],
-                obj.item_time_history[i],
-            )
-            for i, ih in enumerate(obj.item_history)
-            if ih != "NA"
-        ]
-
-        contents = "".join(
-            [
-                f"""
-            <tr>
-                <td>{ih}</td>
-                <td>{r}</td>
-                <td>{t}</td>
-                <td>{se}</td>
-                <td>{it:.2f}</td>
-            </tr>
-        """
-                for ih, r, t, se, it in item_history
-            ]
-        )
-
-        return f"""
-        <table>
-            <tr>
-                <th>Item</th>
-                <th>Resposta</th>
-                <th>Theta</th>
-                <th>Erro Padrão</th>
-                <th>Tempo de Resposta (s)</th>
-            </tr>
-            {contents}
-        </table>
-        """
-
-    def user(self, obj):
-        return obj.user_assessment.user.__str__()
-
-    def assessment(self, obj):
-        return obj.user_assessment.assessment.__str__()
-
-    def has_change_permission(self, *args, **kwargs):
-        return False
-
-    summary.short_description = "Resumo da Avaliação"
-    summary.allow_tags = True

@@ -397,6 +397,7 @@ class AssessmentConfig(models.Model):
         "Valores de Controle de Exposição",
         max_length=255,
         default="0",
+        blank=True,
         help_text="Lista de valores, separados por vírgula, para controle de exposição de itens.",
     )
 
@@ -495,8 +496,8 @@ class QuestionBalancer(SoftDeletableModel):
 
     class Meta:
         db_table = "question_balancers"
-        verbose_name = "Balanceador de Questões"
-        verbose_name_plural = "Balanceadores de Questões"
+        verbose_name = "Balanceador de Conteúdo"
+        verbose_name_plural = "Balanceadores de Conteúdo"
 
 
 class ShadowTestConfig(SoftDeletableModel):
@@ -522,9 +523,9 @@ class ShadowTestConfig(SoftDeletableModel):
         default="==",
         help_text="Operador utilizado para comparar a métrica do teste sombra com o valor de comparação.",
     )
-    value = models.FloatField(
+    value = models.IntegerField(
         "Valor de Comparação",
-        default=0.0,
+        default=0,
         help_text="Valor utilizado para comparar a métrica do teste sombra, de acordo com o operador selecionado.",
     )
     
