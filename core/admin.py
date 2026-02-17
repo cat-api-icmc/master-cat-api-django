@@ -35,18 +35,28 @@ class UploadQuestionsAdmin(admin.ModelAdmin):
     def examples(self, obj):
         EXAMPLES = [
             (
-                "Exemplo JSON",
-                "json/upload-questions-admin-exaple.json",
+                "Exemplo JSON TRI",
+                "json/upload-irt-questions-admin-example.json",
+                "upload-questions.json",
+            ),
+            (
+                "Exemplo JSON mTRI",
+                "json/upload-mirt-questions-admin-example.json",
+                "upload-questions.json",
+            ),
+            (
+                "Exemplo JSON MDC",
+                "json/upload-cdm-questions-admin-example.json",
                 "upload-questions.json",
             ),
             (
                 "Exemplo CSV",
-                "csv/upload-questions-admin-exaple.csv",
+                "csv/upload-questions-admin-example.csv",
                 "upload-questions.csv",
             ),
             (
                 "Exemplo Moodle",
-                "mdl/upload-questions-admin-exaple.mdl",
+                "mdl/upload-questions-admin-example.mdl",
                 "upload-questions.mdl",
             ),
         ]

@@ -1,0 +1,49 @@
+{
+  "model": "M3PL", // one of M1PL, M2PL, M3PL or M4PL
+  "questions": [
+    {
+      "tag": "Nome da Tag", //Optional-String
+      "statement": "Exemplo de enunciado questao 1", //String
+      "alternatives": [
+        {
+          "text": "Exemplo de alternativa 1", //String
+          "is_correct": false //Boolean
+        },
+        {
+          "text": "Exemplo de alternativa 2", //String
+          "is_correct": true //Boolean
+        }
+      ],
+      "params": {
+        "discrimination": ["Parâmetros de discriminação"], //List-Float
+        "difficulty": ["Parâmetros de dificuldade"], //List-Float
+        "guess": ["Parâmetros de chute"], //List-Float
+        "upper_asymptote": ["Parâmetros de Assimptota Superior"] //List-Float
+      }
+    },
+    {
+      "tag": "Nome da Tag", //Optional-String
+      "statement": "Exemplo de enunciado questao 2", //String
+      "alternatives": [
+        {
+          "text": "Exemplo de alternativa 1", //String
+          "is_correct": true //Boolean
+        },
+        {
+          "text": "Exemplo de alternativa 2", //String
+          "is_correct": false //Boolean
+        },
+        {
+          "text": "Exemplo de alternativa 3", //String
+          "is_correct": false //Boolean
+        }
+      ],
+      "params": {
+        "discrimination": ["Parâmetros de discriminação"], //List-Float
+        "difficulty": ["Parâmetros de dificuldade"], //List-Float
+        "guess": ["Parâmetros de chute"], //List-Float
+        "upper_asymptote": ["Parâmetros de Assimptota Superior"] //List-Float
+      }
+    }
+  ]
+}

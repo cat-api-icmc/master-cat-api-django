@@ -1,0 +1,47 @@
+{
+  "model": "DINA", // one of DINA, DINO
+  "questions": [
+    {
+      "tag": "Nome da Tag", //Optional-String
+      "statement": "Exemplo de enunciado questao 1", //String
+      "alternatives": [
+        {
+          "text": "Exemplo de alternativa 1", //String
+          "is_correct": false //Boolean
+        },
+        {
+          "text": "Exemplo de alternativa 2", //String
+          "is_correct": true //Boolean
+        }
+      ],
+      "params": {
+        "guessing": "Parâmetros de acerto ao acaso", //Float
+        "slipping": "Parâmetros de deslize", //Float
+        "qmatrix": ["Parâmetros para a Q-Matrix"] //List-[0,1]
+      }
+    },
+    {
+      "tag": "Nome da Tag", //Optional-String
+      "statement": "Exemplo de enunciado questao 2", //String
+      "alternatives": [
+        {
+          "text": "Exemplo de alternativa 1", //String
+          "is_correct": true //Boolean
+        },
+        {
+          "text": "Exemplo de alternativa 2", //String
+          "is_correct": false //Boolean
+        },
+        {
+          "text": "Exemplo de alternativa 3", //String
+          "is_correct": false //Boolean
+        }
+      ],
+      "params": {
+        "guessing": "Parâmetros de acerto ao acaso", //Float
+        "slipping": "Parâmetros de deslize", //Float
+        "qmatrix": ["Parâmetros para a Q-Matrix"] //List-[0,1]
+      }
+    }
+  ]
+}

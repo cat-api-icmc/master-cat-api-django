@@ -1,31 +1,88 @@
-from learning.models import Question, Alternative
-from learning.services import QuestionPoolService
+import json
+from typing import List
 
 from django.utils.text import slugify
 from django.contrib.auth.hashers import make_password
 
+from learning.models import (
+    AssessmentType,
+    Question,
+    Alternative,
+    QuestionParams,
+    QuestionTag,
+)
+from learning.services import QuestionPoolService
+
+
+def __upload_irt_questions_params(question_id: int, model: str, params: dict) -> None:
+    QuestionParams.objects.create(
+        model=model,
+        question_id=question_id,
+        irt_difficulty=params.get("difficulty", 0),
+        irt_discrimination=params.get("discrimination", 1),
+        irt_guess=params.get("guess", 0),
+        irt_upper_asymptote=params.get("upper_asymptote", 0),
+    )
+
+
+def __upload_mirt_questions_params(question_id: int, model: str, params: dict) -> None:
+    QuestionParams.objects.create(
+        model=model,
+        question_id=question_id,
+        mirt_difficulty=params.get("difficulty", []),
+        mirt_discrimination=params.get("discrimination", []),
+        mirt_guess=params.get("guess", []),
+        mirt_upper_asymptote=params.get("upper_asymptote", []),
+    )
+
+
+def __upload_cdm_questions_params(question_id: int, model: str, params: dict) -> None:
+    QuestionParams.objects.create(
+        model=model,
+        question_id=question_id,
+        cdm_slipping=params.get("slipping", 0),
+        cdm_guessing=params.get("guessing", 0),
+        cdm_qmatrix=params.get("qmatrix", []),
+    )
+
+
+def __upload_question(question_data: dict, model: str) -> Question:
+    tag_id = (
+        QuestionTag.objects.get_or_create(name=question_data["tag"])[0].id
+        if "tag" in question_data
+        else None
+    )
+
+    question = Question.objects.create(
+        statement=question_data["statement"], tag_id=tag_id
+    )
+
+    Alternative.objects.bulk_create(
+        [
+            Alternative(
+                question_id=question.id,
+                text=alternative.get("text", ""),
+                is_correct=alternative.get("is_correct", False),
+            )
+            for alternative in question_data.get("alternatives", [])
+        ]
+    )
+
+    if AssessmentType.is_irt(model):
+        __upload_irt_questions_params(question.id, model, question_data["params"])
+    if AssessmentType.is_mirt(model):
+        __upload_mirt_questions_params(question.id, model, question_data["params"])
+    if AssessmentType.is_cdm(model):
+        __upload_cdm_questions_params(question.id, model, question_data["params"])
+
+    return question
+
 
 def upload_questions_json(obj_file) -> int:
-    import json
-
     data: dict = json.load(obj_file)
-    key = next(iter(data.keys()))
-    question_keys = ("statement", "discrimination", "difficulty", "guess")
+    model, questions = data["model"], data["questions"]
 
-    questions_created = []
-    for question in data[key]:
-        obj = Question.objects.create(**{k: question[k] for k in question_keys})
-        Alternative.objects.bulk_create(
-            [
-                Alternative(
-                    question=obj,
-                    text=alternative.get("text", ""),
-                    is_correct=question.get(f"is_correct", False),
-                )
-                for alternative in question.get("alternatives", [])
-            ]
-        )
-        questions_created.append(obj)
+    questions_created = [__upload_question(data, model) for data in questions]
 
     pool = QuestionPoolService.create_pool(questions_created, super_pool=True)
     return len(pool)

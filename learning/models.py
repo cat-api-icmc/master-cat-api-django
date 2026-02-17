@@ -45,6 +45,11 @@ class AssessmentType(object):
             cls.IRT_2PL,
             cls.IRT_3PL,
             cls.IRT_4PL,
+        )
+
+    @classmethod
+    def is_mirt(cls, type_: str) -> bool:
+        return type_ in (
             cls.MIRT_1PL,
             cls.MIRT_2PL,
             cls.MIRT_3PL,
@@ -73,7 +78,12 @@ class Question(SoftDeletableModel, CKEditorModelMixin):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True)
     statement = CKEditor5Field("Enunciado")
     tag = models.ForeignKey(
-        QuestionTag, on_delete=models.SET_NULL, related_name="questions", null=True
+        QuestionTag,
+        on_delete=models.SET_NULL,
+        related_name="questions",
+        null=True,
+        blank=True,
+        default=None,
     )
 
     class Meta:
@@ -99,7 +109,23 @@ class IRTParams(models.Model):
     irt_discrimination = models.FloatField("Discriminação", default=1.0)
     irt_guess = models.FloatField("Chute", default=0.0)
     irt_upper_asymptote = models.FloatField("Assimptota Superior", default=1.0)
-    irt_mparams = models.JSONField("Parâmetros Multidimensionais", default=list)
+
+    class Meta:
+        abstract = True
+
+
+class MIRTParams(models.Model):
+    """
+    Fields used to store the parameters for the MIRT models.
+    ...
+    """
+
+    mirt_difficulty = models.JSONField("Lista de Dificuldades", default=list)
+    mirt_discrimination = models.JSONField("Lista de Discriminações", default=list)
+    mirt_guess = models.JSONField("Lista de Chutes", default=list)
+    mirt_upper_asymptote = models.JSONField(
+        "Lista de Assimptotas Superiores", default=list
+    )
 
     class Meta:
         abstract = True
@@ -120,7 +146,7 @@ class CDMParams(models.Model):
         abstract = True
 
 
-class QuestionParams(SoftDeletableModel, IRTParams, CDMParams):
+class QuestionParams(SoftDeletableModel, IRTParams, MIRTParams, CDMParams):
     """
     Merge Class to store CAT metadata about a question.
     ...
@@ -433,7 +459,7 @@ class AssessmentConfig(models.Model):
 
     @property
     def is_irt(self) -> bool:
-        return AssessmentType.is_irt(self.type)
+        return AssessmentType.is_irt(self.type) or AssessmentType.is_mirt(self.type)
 
     @property
     def is_cdm(self) -> bool:
@@ -528,7 +554,7 @@ class ShadowTestConfig(SoftDeletableModel):
         default=0,
         help_text="Valor utilizado para comparar a métrica do teste sombra, de acordo com o operador selecionado.",
     )
-    
+
     class Meta:
         db_table = "shadow_test_configs"
         verbose_name = "Configuração de Teste Sombra"

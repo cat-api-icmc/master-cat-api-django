@@ -1,10 +1,9 @@
 {
+  "model": "3PL", // one of 1PL, 2PL, 3PL or 4PL 
   "questions": [
     {
+      "tag": "Nome da Tag", //Optional-String
       "statement": "Exemplo de enunciado questao 1", //String
-      "discrimination": "Parâmtero de discriminação", //Float
-      "difficulty": "Parâmetro de dificuldade", //Float
-      "guess": "Parâmetro de chute", //Float
       "alternatives": [
         {
           "text": "Exemplo de alternativa 1", //String
@@ -14,13 +13,17 @@
           "text": "Exemplo de alternativa 2", //String
           "is_correct": true //Boolean
         }
-      ]
+      ],
+      "params": {
+        "discrimination": "Parâmtero de discriminação", //Float
+        "difficulty": "Parâmetro de dificuldade", //Float
+        "guess": "Parâmetro de chute", //Float
+        "upper_asymptote": "Parâmetro de Assimptota Superior" //Float
+      }
     },
     {
+      "tag": "Nome da Tag", //Optional-String
       "statement": "Exemplo de enunciado questao 2", //String
-      "discrimination": "Parâmtero de discriminação", //Float
-      "difficulty": "Parâmetro de dificuldade", //Float
-      "guess": "Parâmetro de chute", //Float
       "alternatives": [
         {
           "text": "Exemplo de alternativa 1", //String
@@ -34,7 +37,13 @@
           "text": "Exemplo de alternativa 3", //String
           "is_correct": false //Boolean
         }
-      ]
+      ],
+      "params": {
+        "discrimination": "Parâmtero de discriminação", //Float
+        "difficulty": "Parâmetro de dificuldade", //Float
+        "guess": "Parâmetro de chute", //Float
+        "upper_asymptote": "Parâmetro de Assimptota Superior" //Float
+      }
     }
   ]
 }
