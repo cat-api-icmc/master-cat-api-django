@@ -8,8 +8,13 @@ from learning.models import (
     QuestionPoolHasQuestion,
     Question,
 )
-from learning.serializers import AssessmentConfigSerializer, QuestionPlumberSerializer
+from learning.serializers import (
+    CDMAssessmentConfigSerializer,
+    IRTAssessmentConfigSerializer,
+    QuestionPlumberSerializer,
+)
 from plumber.client import PlumberClient
+
 
 class QuestionPoolService(object):
 
@@ -46,13 +51,15 @@ class UserAssessmentService(object):
 
     @classmethod
     def create(
-        cls, user_id: int, assessment: Assessment, user_thetas_start = None
+        cls, user_id: int, assessment: Assessment, user_thetas_start=None
     ) -> tuple[UserAssessment, bool]:
-        questions = assessment.pool.questions.filter(
-            questionpoolhasquestion__removed__isnull=True
-        ).annotate(
-            question_order=F("questionpoolhasquestion__order")
-        ).order_by("questionpoolhasquestion__order")
+        questions = (
+            assessment.pool.questions.filter(
+                questionpoolhasquestion__removed__isnull=True
+            )
+            .annotate(question_order=F("questionpoolhasquestion__order"))
+            .order_by("questionpoolhasquestion__order")
+        )
         question_params = QuestionParams.objects.filter(
             question_id__in=(q.id for q in questions), model=assessment.type
         )
@@ -64,14 +71,14 @@ class UserAssessmentService(object):
         if user_thetas_start is not None:
             assessment.thetas_start = user_thetas_start
 
-        assessment_config = AssessmentConfigSerializer(assessment).data
-
-        start_function = (
-            PlumberClient().cdm_start_assesment
+        start_function, serializer = (
+            (PlumberClient().cdm_start_assesment, CDMAssessmentConfigSerializer)
             if assessment.is_cdm
-            else PlumberClient().irt_start_assesment
+            else (PlumberClient().irt_start_assesment, IRTAssessmentConfigSerializer)
         )
-        plumb_code, plumb_response = start_function(questions_data, assessment_config)
+        plumb_code, plumb_response = start_function(
+            questions_data, serializer(assessment).data
+        )
 
         if plumb_code >= 400:
             return {"data": plumb_response, "status": plumb_code}, False

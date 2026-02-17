@@ -121,24 +121,9 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
             )
 
         if user_assessment.assessment.is_cdm:
-            questions = user_assessment.assessment.pool.questions.filter(
-                questionpoolhasquestion__removed__isnull=True
-            ).order_by("questionpoolhasquestion__order")
-            question_params = QuestionParams.objects.filter(
-                question_id__in=(q.id for q in questions),
-                model=user_assessment.assessment.type,
-            )
-
-            questions_data = QuestionPlumberSerializer(
-                questions, many=True, context={"question_params": question_params}
-            ).data
             plumb_code, plumb_response = PlumberClient().cdm_next_item(
                 answer=int(alternative.is_correct),
                 previous_index=user_assessment.next_index,
-                model=user_assessment.assessment.type,
-                criteria=user_assessment.assessment.criteria,
-                method=user_assessment.assessment.method,
-                questions=questions_data,
                 encoded_design=user_assessment.design,
             )
         else:

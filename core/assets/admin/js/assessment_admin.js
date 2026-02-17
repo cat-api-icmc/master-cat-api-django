@@ -104,7 +104,7 @@ const toggle_stop_fields = (model) => {
   document.getElementsByClassName("field-min_sem")[0].style.display = isCdmModel
     ? "none"
     : "block";
-  document.getElementsByClassName("field-threshhold")[0].style.display =
+  document.getElementsByClassName("field-threshold")[0].style.display =
     isCdmModel ? "block" : "none";
 };
 

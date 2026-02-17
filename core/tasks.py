@@ -1,5 +1,4 @@
 import json
-from typing import List
 
 from django.utils.text import slugify
 from django.contrib.auth.hashers import make_password

@@ -68,21 +68,11 @@ class PlumberClient(object):
         self,
         answer: bool,
         previous_index: int,
-        model: str,
-        criteria: str,
-        method: str,
-        questions: list,
         encoded_design: str,
     ) -> tuple:
         payload = {
             "answer": answer,
             "previous_index": previous_index,
-            "config": {
-                "model_type": model,
-                "criteria": criteria,
-                "method": method,
-            },
-            "questions": questions,
             "design": encoded_design,
         }
         response = self.base.make_request(

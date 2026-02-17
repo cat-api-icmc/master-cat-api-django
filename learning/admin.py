@@ -112,6 +112,7 @@ class UserPoolHasAssessmentInline(admin.TabularInline):
 class AssessmentAdmin(admin.ModelAdmin):
     form = AssessmentForm
     list_display = ("name", "id", "uuid", "active", "pool")
+    raw_id_fields = ("pool",)
     readonly_fields = ("id", "uuid", "dashboards")
     fieldsets = (
         (
@@ -150,7 +151,7 @@ class AssessmentAdmin(admin.ModelAdmin):
                     "max_items",
                     "min_sem",
                     "delta_thetas",
-                    "threshhold",
+                    "threshold",
                     "max_time",
                 ]
             },

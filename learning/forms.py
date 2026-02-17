@@ -112,31 +112,31 @@ class AssessmentForm(forms.ModelForm):
                 }
             )
 
-    def __validate_threshhold(self) -> None:
-        threshhold = self.cleaned_data.get("threshhold")
+    def __validate_threshold(self) -> None:
+        threshold = self.cleaned_data.get("threshold")
         model = self.cleaned_data.get("model")
 
-        if not threshhold or not model:
+        if not threshold or not model:
             return
 
         if not AssessmentType.is_cdm(model):
             raise forms.ValidationError(
-                {"threshhold": "Threshhold só pode ser definido para modelos CDM."}
+                {"threshold": "Threshhold só pode ser definido para modelos CDM."}
             )
 
         # Accept either a single float or two floats separated by comma/space
-        threshhold_str = str(threshhold).strip()
+        threshold_str = str(threshold).strip()
         # Match a single float or two floats (comma or space separated)
         pattern = r"^\s*-?\d+(\.\d+)?(\s*[, ]\s*-?\d+(\.\d+)?\s*)?$"
-        if not re.match(pattern, threshhold_str):
+        if not re.match(pattern, threshold_str):
             raise forms.ValidationError(
                 {
-                    "threshhold": "Threshhold deve ser um número ou dois números separados por vírgula ou espaço."
+                    "threshold": "Threshhold deve ser um número ou dois números separados por vírgula ou espaço."
                 }
             )
 
     def clean(self):
         self.__validate_start_item()
         self.__validate_max_min_items()
-        self.__validate_threshhold()
+        self.__validate_threshold()
         return super().clean()

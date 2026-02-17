@@ -17,7 +17,7 @@
       "params": {
         "guessing": "Parâmetros de acerto ao acaso", //Float
         "slipping": "Parâmetros de deslize", //Float
-        "qmatrix": ["Parâmetros para a Q-Matrix"] //List-[0,1]
+        "qmatrix": ["Parâmetros reduzidos para a Q-Matrix"] //List-[Integers]
       }
     },
     {

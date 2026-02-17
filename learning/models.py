@@ -392,7 +392,7 @@ class AssessmentConfig(models.Model):
     )
 
     # Critério de parada CDM
-    threshhold = models.CharField(
+    threshold = models.CharField(
         "Critério de Parada CDM",
         max_length=255,
         default="0",
@@ -445,6 +445,10 @@ class AssessmentConfig(models.Model):
     @property
     def thetas_start_value(self) -> Union[List[float], float]:
         return self.__get_number_or_list(self.thetas_start)
+    
+    @property
+    def threshold_value(self) -> Union[List[float], float]:
+        return self.__get_number_or_list(self.threshold)
 
     @property
     def exposure_values_list(self) -> List[Union[float, int]]:
