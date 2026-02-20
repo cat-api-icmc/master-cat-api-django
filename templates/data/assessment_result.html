@@ -1,244 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Resultado da Avaliação</title>
-    <style>
-      :root {
-        --primary: #312da8;
-        --primary-a: #312da844;
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resultado da Avaliação</title>
+  <style>
+    :root {
+      --primary: #312da8;
+      --primary-a: #312da844;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      padding: 0;
+      font-family: Open-Sans, Helvetica, Sans-Serif;
+      width: calc(100vw - 4px);
+
+      &::-webkit-scrollbar {
+        background: transparent;
+        border-radius: 8px;
+        width: 4px;
+        margin: 16px;
+        height: 4px;
       }
 
-      body {
-        display: flex;
-        flex-direction: column;
-        margin: 0;
-        padding: 0;
-        font-family: Open-Sans, Helvetica, Sans-Serif;
-        width: calc(100vw - 4px);
-
-        &::-webkit-scrollbar {
-          background: transparent;
-          border-radius: 8px;
-          width: 4px;
-          margin: 16px;
-          height: 4px;
-        }
-        &::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        &::-webkit-scrollbar-thumb {
-          background: #98989c;
-          border-radius: 8px;
-        }
+      &::-webkit-scrollbar-track {
+        background: transparent;
       }
 
-      nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem;
-        box-shadow: #0003 0px 0px 10px;
-        gap: 2rem;
+      &::-webkit-scrollbar-thumb {
+        background: #98989c;
+        border-radius: 8px;
+      }
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      box-shadow: #0003 0px 0px 10px;
+      gap: 2rem;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      gap: 1rem;
+    }
+
+    section {
+      display: flex;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      background-color: var(--primary-a);
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .nav-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .nav-end {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      visible: hidden;
+    }
+
+    .nav-end-item {
+      color: #6b7280;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    }
+
+    .chart-container {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .chart-container img {
+      width: 48%;
+      margin-bottom: 2rem;
+      border-radius: 0.5rem;
+      box-shadow: #0003 0px 0px 10px;
+      padding-right: 1rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+
+      &::-webkit-scrollbar {
+        background: transparent;
+        border-radius: 8px;
+        width: 4px;
+        margin: 16px;
+        height: 4px;
       }
 
-      main {
-        display: flex;
-        flex-direction: column;
-        padding: 1rem;
-        gap: 1rem;
+      &::-webkit-scrollbar-track {
+        background: transparent;
       }
 
-      section {
-        display: flex;
-        border: 1px solid var(--primary);
-        color: var(--primary);
-        background-color: var(--primary-a);
-        border-radius: 0.5rem;
-        padding: 0.5rem 1rem;
-        font-size: 1.25rem;
-        font-weight: 700;
+      &::-webkit-scrollbar-thumb {
+        background: #98989c;
+        border-radius: 8px;
       }
+    }
 
-      .nav-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--primary);
-        text-decoration: none;
+    table {
+      margin: 0 auto;
+    }
 
-        &:hover {
-          text-decoration: underline;
-        }
-      }
+    th,
+    td {
+      padding: 0.25rem 0.75rem;
+      white-space: nowrap;
+    }
 
-      .nav-end {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        visible: hidden;
-      }
+    th {
+      background-color: var(--primary);
+      color: #fff;
+    }
 
-      .nav-end-item {
-        color: #6b7280;
-        text-decoration: none;
+    tr:hover td {
+      background-color: #eee;
+    }
 
-        &:hover {
-          text-decoration: underline;
-          cursor: pointer;
-        }
-      }
-
-      .chart-container {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-      }
-
+    @media (max-width: 1200px) {
       .chart-container img {
-        width: 49%;
-        margin-bottom: 2rem;
-        border-radius: 0.5rem;
-        box-shadow: #0003 0px 0px 10px;
+        width: 100%;
       }
+    }
 
-      .table-container {
-        overflow-x: auto;
-
-        &::-webkit-scrollbar {
-          background: transparent;
-          border-radius: 8px;
-          width: 4px;
-          margin: 16px;
-          height: 4px;
-        }
-        &::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        &::-webkit-scrollbar-thumb {
-          background: #98989c;
-          border-radius: 8px;
-        }
+    @media print {
+      .nav-end {
+        visibility: hidden;
       }
+    }
+  </style>
+</head>
 
-      table {
-        margin: 0 auto;
-      }
-
-      th,
-      td {
-        padding: 0.25rem 0.75rem;
-        white-space: nowrap;
-      }
-
-      th {
-        background-color: var(--primary);
-        color: #fff;
-      }
-
-      tr:hover td {
-        background-color: #eee;
-      }
-
-      @media (max-width: 1200px) {
-        .chart-container img {
-          width: 100%;
-        }
-      }
-
-      @media print {
-        .nav-end {
-          visibility: hidden;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <nav>
-      <a
-        class="nav-title"
-        href="/admin/learning/assessment/{{assessment_id}}/change"
-        >{{assessment_name}}</a
-      >
-      <div class="nav-end">
-        <span class="nav-end-item" onclick="print()">Baixar</span>
-      </div>
-    </nav>
-    <main>
-      <section>ℹ️ Informações sobre as questões</section>
-      <div class="table-container">
-        <table>
-          <tr>
-            <th>Index</th>
-            <th>Questão</th>
-            <th>Tempo médio (s)</th>
-            <th>Taxa de acerto</th>
-          </tr>
-          {% for item in questions %}
-          <tr>
-            <td>{{item.index}}</td>
-            <td>
-              <a
-                href="/admin/learning/question/{{item.id}}/change/"
-                target="__blank"
-              >
-                {{item.statement}}
-              </a>
-            </td>
-            <td>{{item.avg_time | floatformat:1}}</td>
-            <td>{{item.avg_answer | floatformat:2}}</td>
-          </tr>
-          {% endfor %}
-        </table>
-      </div>
-      <section>📊 Gráficos</section>
-      <div class="chart-container">
-        {% for chart_f, chart_b64 in charts %}
-        <img src="data:image/png;base64,{{ chart_b64 }}" alt="{{ chart_f }}" />
+<body>
+  <nav>
+    <a class="nav-title" href="/admin/learning/assessment/{{assessment_id}}/change">{{assessment_name}}</a>
+    <div class="nav-end">
+      <span class="nav-end-item" onclick="print()">Baixar</span>
+    </div>
+  </nav>
+  <main>
+    <section>ℹ️ Informações sobre as questões ministradas</section>
+    <div class="table-container">
+      <table>
+        <tr>
+          <th>Index</th>
+          <th>Questão</th>
+          <th>Tempo médio (s)</th>
+          <th>Taxa de acerto</th>
+        </tr>
+        {% for item in questions %}
+        <tr>
+          <td>{{item.index}}</td>
+          <td>
+            <a href="/admin/learning/question/{{item.id}}/change/" target="__blank">
+              {{item.statement}}
+            </a>
+          </td>
+          <td>{{item.avg_time | floatformat:1}}</td>
+          <td>{{item.avg_answer | floatformat:2}}</td>
+        </tr>
         {% endfor %}
-      </div>
-      <section>🧑‍🎓 Informações sobre os alunos</section>
-      <div class="table-container">
-        <table>
-          <tr>
-            <th>Aluno</th>
-            <th>Email</th>
-            <th>Data de realização</th>
-            <th>Taxa de acerto</th>
-            <th>Tempo de completude (s)</th>
-            <th>Último Theta</th>
-            <th>Último MSE</th>
-            <th></th>
-          </tr>
-          {% for student in students %}
-          <tr>
-            <td>
-              <a
-                href="/admin/user/studentuser/{{student.id}}/change/"
-                target="__blank"
-              >
-                {{student.name}}
-              </a>
-            </td>
-            <td>{{student.email}}</td>
-            <td>{{student.completion_date}}</td>
-            <td>{{student.score | floatformat:2}}</td>
-            <td>{{student.completion_time}}</td>
-            <td>{{student.last_theta | floatformat:3}}</td>
-            <td>{{student.last_standard_error | floatformat:3}}</td>
-            <td>
-              <a
-                href="/data/assessment/student/{{student.user_assessment_uuid}}/detail"
-                target="__blank"
-                class="nav-end-item"
-                >Detalhe</a
-              >
-            </td>
-          </tr>
-          {% endfor %}
-        </table>
-      </div>
-    </main>
-  </body>
+      </table>
+    </div>
+    <section>📊 Gráficos</section>
+    <div class="chart-container">
+      {% for chart_f, chart_b64 in charts %}
+      <img src="data:image/png;base64,{{ chart_b64 }}" alt="{{ chart_f }}" />
+      {% endfor %}
+    </div>
+    <section>🧑‍🎓 Informações sobre os alunos</section>
+    <div class="table-container">
+      <table>
+        <tr>
+          <th>Aluno</th>
+          <th>Email</th>
+          <th>Data de realização</th>
+          <th>Taxa de acerto</th>
+          <th>Tempo de completude (s)</th>
+          <th>Último Theta</th>
+          <th>Último MSE</th>
+          <th></th>
+        </tr>
+        {% for student in students %}
+        <tr>
+          <td>
+            <a href="/admin/user/studentuser/{{student.id}}/change/" target="__blank">
+              {{student.name}}
+            </a>
+          </td>
+          <td>{{student.email}}</td>
+          <td>{{student.completion_date}}</td>
+          <td>{{student.score | floatformat:2}}</td>
+          <td>{{student.completion_time}}</td>
+          <td>{{student.last_theta}}</td>
+          <td>{{student.last_standard_error}}</td>
+          <td>
+            <a href="/data/assessment/student/{{student.user_assessment_uuid}}/detail" target="__blank"
+              class="nav-end-item">Detalhe</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </main>
+</body>
+
 </html>

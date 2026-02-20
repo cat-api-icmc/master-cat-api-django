@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -25,9 +25,11 @@
           margin: 16px;
           height: 4px;
         }
+
         &::-webkit-scrollbar-track {
           background: transparent;
         }
+
         &::-webkit-scrollbar-thumb {
           background: #98989c;
           border-radius: 8px;
@@ -106,10 +108,11 @@
       }
 
       .chart-container img {
-        width: 49%;
+        width: 48%;
         margin-bottom: 2rem;
         border-radius: 0.5rem;
         box-shadow: #0003 0px 0px 10px;
+        padding-right: 1rem;
       }
 
       .table-container {
@@ -122,9 +125,11 @@
           margin: 16px;
           height: 4px;
         }
+
         &::-webkit-scrollbar-track {
           background: transparent;
         }
+
         &::-webkit-scrollbar-thumb {
           background: #98989c;
           border-radius: 8px;
@@ -164,6 +169,7 @@
       }
     </style>
   </head>
+
   <body>
     <nav>
       <span
@@ -174,9 +180,9 @@
         ><a
           class="nav-subtitle"
           href="/admin/learning/assessment/{{assessment.id}}/change"
-          >{{assessment.name}}</a
-        ></span
-      >
+          >{{assessment.name}} | {{assessment.type}}</a
+        >
+      </span>
       <div class="nav-end">
         <span class="nav-end-item" onclick="print()">Baixar</span>
       </div>
@@ -185,7 +191,17 @@
       <section>📊 Gráficos</section>
       <div class="chart-container">
         {% for chart_f, chart_b64 in charts %}
-        <img src="data:image/png;base64,{{ chart_b64 }}" alt="{{ chart_f }}" />
+        <img
+          src="data:image/png;base64,{{ chart_b64 }}"
+          alt="{{ chart_f }}"
+          style="
+      margin: {% if charts|length == 3 and chart_f == 'theta_history_chart' %}
+                2rem 25%
+              {% else %}
+                0
+              {% endif %};
+    "
+        />
         {% endfor %}
       </div>
       <section>ℹ️ Detalhes da Questões</section>
@@ -194,15 +210,15 @@
           <tr>
             <th>Index</th>
             <th>Resposta</th>
-            <th>Theta</th>
+            <th>Theta (&#952;)</th>
             <th>Erro padrão</th>
           </tr>
           {% for item in questions %}
           <tr>
             <td>{{item.index}}</td>
             <td>{% if item.response %} ✅ {% endif %}</td>
-            <td>{{item.theta | floatformat:5}}</td>
-            <td>{{item.mse | floatformat:5}}</td>
+            <td>{{item.theta}}</td>
+            <td>{{item.mse}}</td>
           </tr>
           {% endfor %}
         </table>

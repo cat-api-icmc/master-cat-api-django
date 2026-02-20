@@ -1,6 +1,6 @@
 from django.urls import re_path
 from django.contrib.auth.decorators import login_required
-from .views import *
+from data.views import AssessmentResultView, AssessmentStudentDetailView
 
 urlpatterns = [
     re_path(

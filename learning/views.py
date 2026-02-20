@@ -4,20 +4,18 @@ from rest_framework.response import Response
 from core.permissions import HasAPIAccess
 from plumber.client import PlumberClient
 from user.models import UserPoolHasUser
-from .models import (
+from learning.models import (
     Alternative,
     Assessment,
-    QuestionParams,
     QuestionPoolHasQuestion,
     UserAssessment,
 )
-from .serializers import (
+from learning.serializers import (
     AssessmentSerializer,
-    QuestionPlumberSerializer,
     QuestionSerializer,
 )
-from .services import QuestionPoolService, UserAssessmentService
-from .repositories import AssessmentRepository
+from learning.services import QuestionPoolService, UserAssessmentService
+from learning.repositories import AssessmentRepository
 
 
 class AssessmentViewset(viewsets.ModelViewSet):
@@ -59,12 +57,12 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
             return Response(
                 {"error": "Assessment not found."}, status=status.HTTP_404_NOT_FOUND
             )
-            
+
         user_pool = UserPoolHasUser.objects.filter(
             user_id=request.user.id,
             pool__userpoolhasassessment__assessment_id=assessment.id,
         ).first()
-        
+
         if not user_pool:
             return Response(
                 {"error": "User not enrolled in the assessment's pool."},

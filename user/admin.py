@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.contrib.auth.admin import UserAdmin as SuperUserAdmin
-from .models import *
+from user.models import User, StudentUser, UserPool, UserPoolHasUser, UserPoolHasAssessment
 
 
 @admin.register(User)

@@ -1,5 +1,9 @@
 from django.views.generic import TemplateView
-from .contexts import *
+from data.contexts import (
+    BaseContext,
+    AssessmentResultContext,
+    AssessmentStudentDetailContext,
+)
 
 
 class BaseView(TemplateView):
@@ -13,6 +17,7 @@ class BaseView(TemplateView):
 class AssessmentResultView(BaseView):
     template_name = "data/assessment_result.html"
     context_class = AssessmentResultContext
+
 
 class AssessmentStudentDetailView(BaseView):
     template_name = "data/assessment_student_detail.html"

@@ -1,4 +1,3 @@
-from ipaddress import collapse_addresses
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
@@ -8,8 +7,7 @@ from learning.forms import (
     QuestionParamsInlineForm,
 )
 from learning.services import QuestionPoolService
-from user.models import UserPoolHasAssessment
-from .models import (
+from learning.models import (
     Alternative,
     Assessment,
     Question,
@@ -21,6 +19,7 @@ from .models import (
     QuestionTag,
     ShadowTestConfig,
 )
+from user.models import UserPoolHasAssessment
 
 
 @admin.register(QuestionTag)
@@ -45,7 +44,7 @@ class QuestionParamsInline(admin.StackedInline):
 class QuestionAdmin(admin.ModelAdmin):
     search_fields = ("uuid", "statement")
     list_filter = ("pools",)
-    list_display = ("uuid", "id", "__str__")
+    list_display = ("uuid", "id", "__str__", "tag")
     readonly_fields = ("id", "uuid")
     actions = ["create_pool"]
     inlines = [AlternativeInline, QuestionParamsInline]
@@ -111,7 +110,7 @@ class UserPoolHasAssessmentInline(admin.TabularInline):
 @admin.register(Assessment)
 class AssessmentAdmin(admin.ModelAdmin):
     form = AssessmentForm
-    list_display = ("name", "id", "uuid", "active", "pool")
+    list_display = ("name", "id", "uuid", "active", "pool", "dashboards")
     raw_id_fields = ("pool",)
     readonly_fields = ("id", "uuid", "dashboards")
     fieldsets = (
@@ -156,9 +155,18 @@ class AssessmentAdmin(admin.ModelAdmin):
                 ]
             },
         ),
-        ("CONTROLE DE EXPOSIÇÃO", {"fields": ["exposure_control", "exposure_values"],}),
+        (
+            "CONTROLE DE EXPOSIÇÃO",
+            {
+                "fields": ["exposure_control", "exposure_values"],
+            },
+        ),
     )
-    inlines = [QuestionBalancerInline, ShadowTestConfigInline, UserPoolHasAssessmentInline]
+    inlines = [
+        QuestionBalancerInline,
+        ShadowTestConfigInline,
+        UserPoolHasAssessmentInline,
+    ]
 
     class Media:
         js = ("admin/js/assessment_admin.js",)
@@ -167,7 +175,7 @@ class AssessmentAdmin(admin.ModelAdmin):
     def dashboards(self, obj):
         return f"""
             <div>
-                <a href="/data/assessment/{obj.uuid}/result">Resultados</a>
+                <a href="/data/assessment/{obj.uuid}/result" target="_blank">Resultados</a>
             </div>
         """
 

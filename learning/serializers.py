@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import (
+from learning.models import (
     AssessmentConfig,
     AssessmentType,
     CriteriaTypes,

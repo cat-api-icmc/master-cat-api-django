@@ -445,7 +445,7 @@ class AssessmentConfig(models.Model):
     @property
     def thetas_start_value(self) -> Union[List[float], float]:
         return self.__get_number_or_list(self.thetas_start)
-    
+
     @property
     def threshold_value(self) -> Union[List[float], float]:
         return self.__get_number_or_list(self.threshold)
@@ -633,22 +633,30 @@ class MirtDesignData(SoftDeletableModel):
             return f"{self.pk} | u: {self.user_assessment.user} | a: {self.user_assessment.assessment}"
         return f"{self.pk} - MIRT Design Data"
 
-    def __last(self, iter_: list) -> float:
+    def __last(self, iter_: list) -> Union[float, list]:
         return iter_[-1] if len(iter_) else 0.0
 
     def __len__(self) -> int:
         return len(self.item_history)
 
     @property
-    def score(self) -> float:
-        return sum(self.response_history) / len(self.response_history)
+    def normalized_item_history(self) -> list:
+        return list(filter(lambda x: x != "NA", self.item_history))
 
     @property
-    def last_theta(self) -> float:
+    def normalized_response_history(self) -> list:
+        return list(filter(lambda x: x != "NA", self.response_history))
+
+    @property
+    def score(self) -> float:
+        return sum(self.normalized_response_history) / len(self.response_history)
+
+    @property
+    def last_theta(self) -> list:
         return self.__last(self.theta_history)
 
     @property
-    def last_standard_error(self) -> float:
+    def last_standard_error(self) -> list:
         return self.__last(self.standard_error_history)
 
     @property
