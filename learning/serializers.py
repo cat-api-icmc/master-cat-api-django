@@ -81,57 +81,58 @@ class Irt4PLQuestionParamsPlumberSerializer(QuestionParamsPlumberSerializer):
         )
 
 
-class Mirt1PLQuestionParamsPlumberSerializer(QuestionParamsPlumberSerializer):
-
-    class Meta:
-        model = QuestionParams
-        fields = (
-            "id",
-            "mirt_difficulty",
-        )
+class Mirt1PLQuestionParamsPlumberSerializer(Irt1PLQuestionParamsPlumberSerializer):
+    pass
 
 
 class Mirt2PLQuestionParamsPlumberSerializer(QuestionParamsPlumberSerializer):
+    irt_discrimination = serializers.ListField(source="mirt_discrimination")
 
     class Meta:
         model = QuestionParams
         fields = (
             "id",
-            "mirt_discrimination",
-            "mirt_difficulty",
+            "irt_discrimination",
+            "irt_difficulty",
         )
 
 
 class Mirt3PLQuestionParamsPlumberSerializer(QuestionParamsPlumberSerializer):
+    irt_discrimination = serializers.ListField(source="mirt_discrimination")
 
     class Meta:
         model = QuestionParams
         fields = (
             "id",
-            "mirt_discrimination",
-            "mirt_difficulty",
-            "mirt_guess",
+            "irt_discrimination",
+            "irt_difficulty",
+            "irt_guess",
         )
 
 
 class Mirt4PLQuestionParamsPlumberSerializer(QuestionParamsPlumberSerializer):
-
+    irt_discrimination = serializers.ListField(source="mirt_discrimination")
+    
     class Meta:
         model = QuestionParams
         fields = (
             "id",
-            "mirt_discrimination",
-            "mirt_difficulty",
-            "mirt_guess",
-            "mirt_upper_asymptote",
+            "irt_discrimination",
+            "irt_difficulty",
+            "irt_guess",
+            "irt_upper_asymptote",
         )
 
 
-class DinQuestionParamsPlumberSerializer(QuestionParamsPlumberSerializer):
+class DinaQuestionParamsPlumberSerializer(QuestionParamsPlumberSerializer):
 
     class Meta:
         model = QuestionParams
         fields = ("id", "cdm_slipping", "cdm_guessing", "cdm_qmatrix")
+
+
+class DinoQuestionParamsPlumberSerializer(DinaQuestionParamsPlumberSerializer):
+    pass
 
 
 class GdinaQuestionParamsPlumberSerializer(QuestionParamsPlumberSerializer):
@@ -164,8 +165,8 @@ class QuestionPlumberSerializer(serializers.ModelSerializer):
             AssessmentType.MIRT_2PL: Mirt2PLQuestionParamsPlumberSerializer,
             AssessmentType.MIRT_3PL: Mirt3PLQuestionParamsPlumberSerializer,
             AssessmentType.MIRT_4PL: Mirt4PLQuestionParamsPlumberSerializer,
-            AssessmentType.CDM_DINA: DinQuestionParamsPlumberSerializer,
-            AssessmentType.CDM_DINO: DinQuestionParamsPlumberSerializer,
+            AssessmentType.CDM_DINA: DinaQuestionParamsPlumberSerializer,
+            AssessmentType.CDM_DINO: DinoQuestionParamsPlumberSerializer,
             AssessmentType.CDM_GDINA: GdinaQuestionParamsPlumberSerializer,
         }
         return switcher[model]

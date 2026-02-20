@@ -28,10 +28,10 @@ def __upload_mirt_questions_params(question_id: int, model: str, params: dict) -
     QuestionParams.objects.create(
         model=model,
         question_id=question_id,
-        mirt_difficulty=params.get("difficulty", []),
+        irt_difficulty=params.get("difficulty", 0),
         mirt_discrimination=params.get("discrimination", []),
-        mirt_guess=params.get("guess", []),
-        mirt_upper_asymptote=params.get("upper_asymptote", []),
+        irt_guess=params.get("guess", 0),
+        irt_upper_asymptote=params.get("upper_asymptote", 1),
     )
 
 

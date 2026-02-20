@@ -16,9 +16,9 @@
       ],
       "params": {
         "discrimination": ["Parâmetros de discriminação"], //List-Float
-        "difficulty": ["Parâmetros de dificuldade"], //List-Float
-        "guess": ["Parâmetros de chute"], //List-Float
-        "upper_asymptote": ["Parâmetros de Assimptota Superior"] //List-Float
+        "difficulty": "Parâmetro de dificuldade", //Float
+        "guess": "Parâmetro de chute", //Float
+        "upper_asymptote": "Parâmetro de Assimptota Superior" //Float
       }
     },
     {
@@ -40,9 +40,9 @@
       ],
       "params": {
         "discrimination": ["Parâmetros de discriminação"], //List-Float
-        "difficulty": ["Parâmetros de dificuldade"], //List-Float
-        "guess": ["Parâmetros de chute"], //List-Float
-        "upper_asymptote": ["Parâmetros de Assimptota Superior"] //List-Float
+        "difficulty": "Parâmetro de dificuldade", //Float
+        "guess": "Parâmetro de chute", //Float
+        "upper_asymptote": "Parâmetro de Assimptota Superior" //Float
       }
     }
   ]

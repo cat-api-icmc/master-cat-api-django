@@ -1,5 +1,6 @@
 import io
 import base64
+import math
 from django.db.models import Model as DjangoModel
 
 from matplotlib.axes import Axes
@@ -11,7 +12,7 @@ from learning.repositories import MirtDesignDataRepository
 
 plt.switch_backend("agg")
 
-CHART_RATIO = 16, 9
+CHART_RATIO = 16, 7
 DPI = 120
 
 
@@ -247,7 +248,7 @@ class AssessmentStudentDetailIrtDataExtractor(AssessmentStudentDetailDataExtract
         fig, axes = plt.subplots(
             n_dimensions,
             1,
-            figsize=(8, 4 * n_dimensions),
+            figsize=(8, 3 * n_dimensions),
             sharex=True,
         )
 
@@ -344,6 +345,73 @@ class AssessmentStudentDetailCdmDataExtractor(AssessmentStudentDetailIrtDataExtr
             }
             for i, ih in enumerate(self.mirt_design_data.normalized_item_history)
         ]
+        
+    def _plot_multi_chart(
+        self,
+        y_field: str,
+        ylabel: str,
+        title: str,
+        colors: list[str],
+    ) -> str:
+        y_axis = getattr(self.mirt_design_data, y_field, [])
+
+        if not y_axis:
+            return ""
+
+        n_dimensions = len(y_axis[0])
+        ncols = 2
+        nrows = math.ceil(n_dimensions / ncols)
+
+        fig, axes = plt.subplots(
+            nrows=nrows,
+            ncols=ncols,
+            figsize=(12, 3 * nrows),
+            sharex=True,
+        )
+        axes = axes.flatten()
+
+        if n_dimensions == 1:
+            axes = [axes]
+
+        x_axis = ["Inicial"] + [
+            str(i) for i in self.mirt_design_data.normalized_item_history
+        ]
+
+        for dim in range(n_dimensions):
+            ax = axes[dim]
+            dim_values = [theta[dim] for theta in y_axis]
+            color = colors[dim % len(colors)]
+            ax.plot(
+                x_axis,
+                dim_values,
+                marker="o",
+                linestyle="-",
+                color=f"{color}88",
+                label=f"Dimensão {dim + 1}",
+            )
+
+            ax.scatter(x_axis, dim_values, color=color, zorder=3)
+            ax.set_ylim(0, 1)
+
+            for i, v in enumerate(dim_values):
+                ax.annotate(
+                    f"{v:.3f}",
+                    xy=(x_axis[i], dim_values[i]),
+                    textcoords="offset points",
+                    xytext=(0, 5),
+                    ha="center",
+                    bbox=dict(boxstyle="round,pad=0", fc="white", ec="white"),
+                )
+
+            ax.set_ylabel(f"{ylabel} {dim + 1}")
+            ax.set_title(f"{title} - Dimensão {dim + 1}")
+            ax.grid(True)
+
+        axes[-1].set_xlabel("Questões")
+
+        fig.tight_layout()
+
+        return self._fig_to_base64(fig)
         
     def charts_data(self) -> list:
         chart_functions = [

@@ -107,25 +107,9 @@ class IRTParams(models.Model):
 
     irt_difficulty = models.FloatField("Dificuldade", default=0.0)
     irt_discrimination = models.FloatField("Discriminação", default=1.0)
+    mirt_discrimination = models.JSONField("Lista de Discriminações", default=list)
     irt_guess = models.FloatField("Chute", default=0.0)
     irt_upper_asymptote = models.FloatField("Assimptota Superior", default=1.0)
-
-    class Meta:
-        abstract = True
-
-
-class MIRTParams(models.Model):
-    """
-    Fields used to store the parameters for the MIRT models.
-    ...
-    """
-
-    mirt_difficulty = models.JSONField("Lista de Dificuldades", default=list)
-    mirt_discrimination = models.JSONField("Lista de Discriminações", default=list)
-    mirt_guess = models.JSONField("Lista de Chutes", default=list)
-    mirt_upper_asymptote = models.JSONField(
-        "Lista de Assimptotas Superiores", default=list
-    )
 
     class Meta:
         abstract = True
@@ -146,7 +130,7 @@ class CDMParams(models.Model):
         abstract = True
 
 
-class QuestionParams(SoftDeletableModel, IRTParams, MIRTParams, CDMParams):
+class QuestionParams(SoftDeletableModel, IRTParams, CDMParams):
     """
     Merge Class to store CAT metadata about a question.
     ...

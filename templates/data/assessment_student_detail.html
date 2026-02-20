@@ -195,10 +195,11 @@
           src="data:image/png;base64,{{ chart_b64 }}"
           alt="{{ chart_f }}"
           style="
-      margin: {% if charts|length == 3 and chart_f == 'theta_history_chart' %}
-                2rem 25%
+          margin: 1rem auto;
+      width: {% if charts|length == 3 and chart_f == 'theta_history_chart' %}
+                80%
               {% else %}
-                0
+                48%
               {% endif %};
     "
         />
