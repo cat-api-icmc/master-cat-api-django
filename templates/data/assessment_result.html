@@ -174,20 +174,20 @@
       <table>
         <tr>
           <th>Index</th>
-          <th>Questão</th>
           <th>Tempo médio (s)</th>
           <th>Taxa de acerto</th>
+          <th>Questão</th>
         </tr>
         {% for item in questions %}
         <tr>
           <td>{{item.index}}</td>
-          <td>
-            <a href="/admin/learning/question/{{item.id}}/change/" target="__blank">
-              {{item.statement}}
-            </a>
-          </td>
           <td>{{item.avg_time | floatformat:1}}</td>
           <td>{{item.avg_answer | floatformat:2}}</td>
+          <td>
+            <a href="/admin/learning/question/{{item.id}}/change/" target="__blank">
+              Ir para questão
+            </a>
+          </td>
         </tr>
         {% endfor %}
       </table>
