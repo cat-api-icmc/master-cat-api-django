@@ -11,6 +11,8 @@ from learning.models import (
     QuestionTag,
 )
 from learning.services import QuestionPoolService
+from user.models import UserPool
+from user.services import UserPoolService
 
 
 def __upload_irt_questions_params(question_id: int, model: str, params: dict) -> None:
@@ -151,26 +153,27 @@ def mass_create_users(obj_file) -> int:
         return make_password(f"pw.{pw_base}")
 
     def _get_user(row) -> User:
-        email_base = row["email_base"]
-        full_name = row["full_name"]
+        email_base, full_name = row["email_base"], row["full_name"]
 
         email = f"{email_base}{EMAIL_DOMAIN}"
         first_name, last_name = full_name.split(" ", 1)
         username = slugify(full_name).replace("-", "_")
         password = _get_pw(email_base)
 
-        return User(
+        return User.objects.get_or_create(
             email=email,
-            first_name=first_name,
-            last_name=last_name,
-            username=username,
-            password=password,
-            is_active=True,
-            is_staff=False,
-            is_superuser=False,
-        )
+            defaults={
+                "first_name": first_name,
+                "last_name": last_name,
+                "username": username,
+                "password": password,
+                "is_active": True,
+                "is_staff": False,
+                "is_superuser": False,
+            },
+        )[0]
 
     users_created = [_get_user(row) for _, row in data.iterrows()]
+    UserPoolService.create_user_pool(users_created)
 
-    User.objects.bulk_create(users_created)
     return len(users_created)

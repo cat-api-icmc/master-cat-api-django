@@ -65,6 +65,9 @@ class UserPool(SoftDeletableModel):
     def __str__(self) -> str:
         return self.name
 
+    def __len__(self) -> int:
+        return self.users.filter(userpoolhasuser__removed__isnull=True).count()
+
 
 class UserPoolHasUser(SoftDeletableModel):
     pool = models.ForeignKey(UserPool, on_delete=models.CASCADE)

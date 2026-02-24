@@ -41,6 +41,11 @@ class UserPoolHasAssessmentInline(admin.TabularInline):
 
 @admin.register(UserPool)
 class UserPoolAdmin(admin.ModelAdmin):
-    list_display = ("uuid", "name")
+    list_display = ("uuid", "name", "get_count")
     readonly_fields = ("uuid",)
     inlines = (UserPoolHasAssessmentInline, UserPoolHasUserInline)
+    
+    def get_count(self, obj):
+        return len(obj)
+    
+    get_count.short_description = "# Alunos"
