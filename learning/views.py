@@ -1,5 +1,8 @@
+from turtle import st
+
 import arrow
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from core.permissions import HasAPIAccess
 from plumber.client import PlumberClient
@@ -178,3 +181,30 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
         }
 
         return Response(data, status=status.HTTP_200_OK)
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="force-complete",
+        url_name="force-complete",
+    )
+    def force_complete(self, request, uuid=None, **kwargs):
+        user_assessment = UserAssessment.objects.filter(uuid=uuid).first()
+        if not user_assessment:
+            return Response(
+                {"error": "User assessment not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if user_assessment.status == UserAssessment.COMPLETED:
+            return Response(
+                {"error": "User assessment already completed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user_assessment.save_fields(
+            status=UserAssessment.COMPLETED, finished=arrow.now().__str__()
+        )
+        UserAssessmentService.get_design_data(user_assessment)
+        return Response(
+            {"message": "User assessment forcefully completed."},
+            status=status.HTTP_200_OK,
+        )
