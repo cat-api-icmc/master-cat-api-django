@@ -32,7 +32,7 @@ const CRITERIA_LABELS = {
 
 const get_criterias = (model) => {
   const IRT_MODELS = ["1PL", "2PL", "3PL", "4PL"];
-  const MIRT_MODELS = ["M1PL", "M2PL", "M3PL", "M4PL"];
+  const MIRT_MODELS = ["M2PL", "M3PL", "M4PL"];
   const CDM_MODELS = ["DINA", "DINO", "GDINA"];
 
   const base_criterias = ["seq", "random"];
@@ -108,14 +108,55 @@ const toggle_stop_fields = (model) => {
     isCdmModel ? "block" : "none";
 };
 
+const toggle_theta_range_fields = (model) => {
+  const isMirtModel = [
+    "1PL",
+    "2PL",
+    "3PL",
+    "4PL",
+    "M2PL",
+    "M3PL",
+    "M4PL",
+  ].includes(model);
+  document.getElementsByClassName("field-theta_range")[0].style.display =
+    isMirtModel ? "block" : "none";
+};
+
+const toogle_weight_fields = (criteria) => {
+  const shouldShowWeights = [
+    "MLWI",
+    "MPWI",
+    "Trule",
+    "TPrule",
+    "Wrule",
+    "WPrule",
+    "Arule",
+    "APrule",
+  ].includes(criteria);
+  document.getElementsByClassName("field-weights")[0].style.display =
+    shouldShowWeights ? "block" : "none";
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   const type_select = document.getElementById("id_type");
   type_select.addEventListener("change", (event) => {
     const selected_type = event.target.value;
     populate_criteria_options(selected_type);
     toggle_stop_fields(selected_type);
+    toggle_theta_range_fields(selected_type);
   });
+
+  const criteria_select = document.getElementById("id_criteria");
+  criteria_select.addEventListener("change", (event) => {
+    const selected_criteria = event.target.value;
+    toogle_weight_fields(selected_criteria);
+  });
+
   const initial_type = type_select.value;
+  const initial_criteria = criteria_select.value;
+
   populate_criteria_options(initial_type);
+  toggle_theta_range_fields(initial_type);
   toggle_stop_fields(initial_type);
+  toogle_weight_fields(initial_criteria);
 });

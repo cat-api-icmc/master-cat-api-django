@@ -139,6 +139,9 @@ class AssessmentAdmin(admin.ModelAdmin):
                     "criteria",
                     "start_item",
                     "thetas_start",
+                    "quadpts",
+                    "theta_range",
+                    "weights",
                 ]
             },
         ),

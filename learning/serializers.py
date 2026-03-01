@@ -161,7 +161,6 @@ class QuestionPlumberSerializer(serializers.ModelSerializer):
             AssessmentType.IRT_2PL: Irt2PLQuestionParamsPlumberSerializer,
             AssessmentType.IRT_3PL: Irt3PLQuestionParamsPlumberSerializer,
             AssessmentType.IRT_4PL: Irt4PLQuestionParamsPlumberSerializer,
-            AssessmentType.MIRT_1PL: Mirt1PLQuestionParamsPlumberSerializer,
             AssessmentType.MIRT_2PL: Mirt2PLQuestionParamsPlumberSerializer,
             AssessmentType.MIRT_3PL: Mirt3PLQuestionParamsPlumberSerializer,
             AssessmentType.MIRT_4PL: Mirt4PLQuestionParamsPlumberSerializer,

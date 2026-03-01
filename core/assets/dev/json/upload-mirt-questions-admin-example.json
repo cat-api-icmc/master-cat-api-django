@@ -1,5 +1,5 @@
 {
-  "model": "M3PL", // one of M1PL, M2PL, M3PL or M4PL
+  "model": "M3PL", // one of M2PL, M3PL or M4PL
   "questions": [
     {
       "tag": "Nome da Tag", //Optional-String

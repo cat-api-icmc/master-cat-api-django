@@ -26,7 +26,6 @@ class QuestionParamsInlineForm(forms.ModelForm):
                 "irt_guess",
                 "irt_upper_asymptote",
             ],
-            AssessmentType.MIRT_1PL: ["irt_difficulty"],
             AssessmentType.MIRT_2PL: ["irt_difficulty", "mirt_discrimination"],
             AssessmentType.MIRT_3PL: [
                 "irt_difficulty",
@@ -135,8 +134,50 @@ class AssessmentForm(forms.ModelForm):
                 }
             )
 
+    def __validate_theta_range(self) -> None:
+        theta_range = self.cleaned_data.get("theta_range")
+        model = self.cleaned_data.get("model")
+
+        if not theta_range or not model:
+            return
+
+        if not AssessmentType.is_irt(model) and not AssessmentType.is_mirt(model):
+            raise forms.ValidationError(
+                {
+                    "theta_range": "Theta range só pode ser definido para modelos IRT ou MIRT."
+                }
+            )
+
+        # Accept two floats separated by comma/space
+        theta_range_str = str(theta_range).strip()
+        pattern = r"^\s*-?\d+(\.\d+)?\s*[, ]\s*-?\d+(\.\d+)?\s*$"
+        if not re.match(pattern, theta_range_str):
+            raise forms.ValidationError(
+                {
+                    "theta_range": "Theta range deve ser dois números separados por vírgula ou espaço."
+                }
+            )
+
+        # Validate that the first number is less than the second number
+        parts = re.split(r"[, ]", theta_range_str)
+        if len(parts) == 2:
+            try:
+                low = float(parts[0].strip())
+                high = float(parts[1].strip())
+                if low >= high:
+                    raise forms.ValidationError(
+                        {
+                            "theta_range": "O primeiro número do theta range deve ser menor que o segundo número."
+                        }
+                    )
+            except ValueError:
+                raise forms.ValidationError(
+                    {"theta_range": "Theta range deve conter números válidos."}
+                )
+
     def clean(self):
         self.__validate_start_item()
         self.__validate_max_min_items()
         self.__validate_threshold()
+        self.__validate_theta_range()
         return super().clean()

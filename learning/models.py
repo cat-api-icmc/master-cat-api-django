@@ -17,7 +17,6 @@ class AssessmentType(object):
     MIRT_4PL = "M4PL"
     MIRT_3PL = "M3PL"
     MIRT_2PL = "M2PL"
-    MIRT_1PL = "M1PL"
 
     CDM_DINA = "DINA"
     CDM_DINO = "DINO"
@@ -32,7 +31,6 @@ class AssessmentType(object):
         (MIRT_4PL, "TRI - M4PL"),
         (MIRT_3PL, "TRI - M3PL"),
         (MIRT_2PL, "TRI - M2PL"),
-        (MIRT_1PL, "TRI - M1PL"),
         (CDM_DINA, "CDM - DINA"),
         (CDM_DINO, "CDM - DINO"),
         (CDM_GDINA, "CDM - G-DINA"),
@@ -50,7 +48,6 @@ class AssessmentType(object):
     @classmethod
     def is_mirt(cls, type_: str) -> bool:
         return type_ in (
-            cls.MIRT_1PL,
             cls.MIRT_2PL,
             cls.MIRT_3PL,
             cls.MIRT_4PL,
@@ -409,6 +406,22 @@ class AssessmentConfig(models.Model):
         default="0",
         blank=True,
         help_text="Lista de valores, separados por vírgula, para controle de exposição de itens.",
+    )
+    quadpts = models.PositiveIntegerField(
+        "Pontos de Quadratura",
+        default=21,
+        help_text="Número de pontos de quadratura para integração numérica em modelos multidimensionais.",
+    )
+    theta_range = models.CharField(
+        "Range de Theta",
+        max_length=255,
+        default="-4,4",
+        help_text="Range de theta para integração numérica em modelos multidimensionais. Esse campo aceita dois valores separados por vírgula representando o limite inferior e superior do range.",
+    )
+    weights = models.JSONField(
+        "Pesos para Critérios de Seleção de Itens Multidimensionais",
+        default=list,
+        help_text="Lista de pesos, separados por vírgula, para critérios de seleção de itens multidimensionais.",
     )
 
     class Meta:
