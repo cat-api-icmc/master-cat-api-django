@@ -145,6 +145,7 @@ class AssessmentAdmin(admin.ModelAdmin):
                     "latent_means",
                     "latent_covariances",
                     "prior",
+                    "kl_delta",
                 ]
             },
         ),

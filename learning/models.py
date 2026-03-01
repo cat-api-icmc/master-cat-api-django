@@ -410,37 +410,42 @@ class AssessmentConfig(models.Model):
     quadpts = models.PositiveIntegerField(
         "Pontos de Quadratura",
         default=21,
-        help_text="Número de pontos de quadratura para integração numérica em modelos multidimensionais.",
+        help_text="Número de pontos de quadratura para integração numérica.",
     )
     theta_range = models.CharField(
         "Range de Theta",
         max_length=255,
         default="-4,4",
-        help_text="Range de theta para integração numérica em modelos multidimensionais. Esse campo aceita dois valores separados por vírgula representando o limite inferior e superior do range.",
+        help_text="Range de theta para integração numérica. Esse campo aceita dois valores separados por vírgula representando o limite inferior e superior do range.",
     )
     weights = models.JSONField(
-        "Pesos para Critérios de Seleção de Itens Multidimensionais",
+        "Pesos para Critérios de Seleção de Itens",
         default=list,
-        help_text="Lista de pesos, separados por vírgula, para critérios de seleção de itens multidimensionais.",
+        help_text="Lista de pesos, separados por vírgula, para critérios de seleção de itens.",
     )
     
     latent_means = models.JSONField(
-        "Médias Latentes para Testes Multidimensionais",
+        "Médias Latentes",
         max_length=255,
         default=list,
-        help_text="Lista de médias latentes, separados por vírgula, para testes multidimensionais.",
+        help_text="Lista de médias latentes, separados por vírgula.",
     )
     latent_covariances = models.JSONField(
-        "Covariâncias Latentes para Testes Multidimensionais",
+        "Covariâncias Latentes",
         max_length=255,
         default=list,
-        help_text="Lista de covariâncias latentes, separados por vírgula, para testes multidimensionais. O formato deve ser uma lista de valores separados por vírgula representando a matriz de covariância em formato linearizado (linha por linha). Por exemplo, para uma matriz 2x2: 'var1, cov12, var2'.",
+        help_text="Lista de covariâncias latentes, separados por vírgula. O formato deve ser uma lista de valores separados por vírgula representando a matriz de covariância em formato linearizado (linha por linha). Por exemplo, para uma matriz 2x2: 'var1, cov12, var2'.",
     )
     prior = models.JSONField(
-        "Distribuição a Priori para Testes Multidimensionais",
+        "Distribuição a Priori",
         max_length=255,
         default=dict,
-        help_text="Distribuição a priori para testes multidimensionais. O formato deve ser um dicionário com 2^k chaves. Ex.: {'000': 0.1, '001': 0.1, '010': 0.1, '011': 0.1, '100': 0.1, '101': 0.1, '110': 0.1, '111': 0.3} para um teste com 3 dimensões.",
+        help_text="Distribuição a priori. O formato deve ser um dicionário com 2^k chaves. Ex.: {'000': 0.1, '001': 0.1, '010': 0.1, '011': 0.1, '100': 0.1, '101': 0.1, '110': 0.1, '111': 0.3} para um teste com 3 dimensões.",
+    )
+    kl_delta = models.FloatField(
+        "Delta para Critérios KL",
+        default=0.1,
+        help_text="Valor de delta utilizado nos critérios de seleção baseados em divergência de Kullback-Leibler. Esse valor é subtraído do theta estimado para calcular a distribuição de probabilidade dos itens candidatos. O padrão é 0.1.",
     )
 
     class Meta:

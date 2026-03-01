@@ -112,6 +112,12 @@ const toogle_weight_fields = (criteria) => {
     shouldShowWeights ? "block" : "none";
 };
 
+const toogle_kl_delta_field = (criteria) => {
+  const shouldShowKlDelta = ["KLn", "IKLn", "IKLPn"].includes(criteria);
+  document.getElementsByClassName("field-kl_delta")[0].style.display =
+    shouldShowKlDelta ? "block" : "none";
+};
+
 const toggle_model_fields = (model) => {
   const isCdmModel = ["DINA", "DINO", "GDINA"].includes(model);
   const cdmFields = ["field-threshold", "field-prior"];
