@@ -97,31 +97,6 @@ const populate_criteria_options = (model) => {
     : criterias[0];
 };
 
-const toggle_stop_fields = (model) => {
-  const isCdmModel = ["DINA", "DINO", "GDINA"].includes(model);
-  document.getElementsByClassName("field-delta_thetas")[0].style.display =
-    isCdmModel ? "none" : "block";
-  document.getElementsByClassName("field-min_sem")[0].style.display = isCdmModel
-    ? "none"
-    : "block";
-  document.getElementsByClassName("field-threshold")[0].style.display =
-    isCdmModel ? "block" : "none";
-};
-
-const toggle_theta_range_fields = (model) => {
-  const isMirtModel = [
-    "1PL",
-    "2PL",
-    "3PL",
-    "4PL",
-    "M2PL",
-    "M3PL",
-    "M4PL",
-  ].includes(model);
-  document.getElementsByClassName("field-theta_range")[0].style.display =
-    isMirtModel ? "block" : "none";
-};
-
 const toogle_weight_fields = (criteria) => {
   const shouldShowWeights = [
     "MLWI",
@@ -137,13 +112,38 @@ const toogle_weight_fields = (criteria) => {
     shouldShowWeights ? "block" : "none";
 };
 
+const toggle_model_fields = (model) => {
+  const isCdmModel = ["DINA", "DINO", "GDINA"].includes(model);
+  const cdmFields = ["field-threshold", "field-prior"];
+  const mirtFields = [
+    "field-quadpts",
+    "field-theta_range",
+    "field-delta_thetas",
+    "field-weights",
+    "field-min_sem",
+    "field-latent_means",
+    "field-latent_covariances",
+  ];
+
+  cdmFields.forEach((field) => {
+    document.getElementsByClassName(field)[0].style.display = isCdmModel
+      ? "block"
+      : "none";
+  });
+
+  mirtFields.forEach((field) => {
+    document.getElementsByClassName(field)[0].style.display = isCdmModel
+      ? "none"
+      : "block";
+  });
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   const type_select = document.getElementById("id_type");
   type_select.addEventListener("change", (event) => {
     const selected_type = event.target.value;
     populate_criteria_options(selected_type);
-    toggle_stop_fields(selected_type);
-    toggle_theta_range_fields(selected_type);
+    toggle_model_fields(selected_type);
   });
 
   const criteria_select = document.getElementById("id_criteria");
@@ -156,7 +156,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const initial_criteria = criteria_select.value;
 
   populate_criteria_options(initial_type);
-  toggle_theta_range_fields(initial_type);
-  toggle_stop_fields(initial_type);
+  toggle_model_fields(initial_type);
   toogle_weight_fields(initial_criteria);
 });

@@ -142,6 +142,9 @@ class AssessmentAdmin(admin.ModelAdmin):
                     "quadpts",
                     "theta_range",
                     "weights",
+                    "latent_means",
+                    "latent_covariances",
+                    "prior",
                 ]
             },
         ),

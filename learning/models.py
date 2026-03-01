@@ -423,6 +423,25 @@ class AssessmentConfig(models.Model):
         default=list,
         help_text="Lista de pesos, separados por vírgula, para critérios de seleção de itens multidimensionais.",
     )
+    
+    latent_means = models.JSONField(
+        "Médias Latentes para Testes Multidimensionais",
+        max_length=255,
+        default=list,
+        help_text="Lista de médias latentes, separados por vírgula, para testes multidimensionais.",
+    )
+    latent_covariances = models.JSONField(
+        "Covariâncias Latentes para Testes Multidimensionais",
+        max_length=255,
+        default=list,
+        help_text="Lista de covariâncias latentes, separados por vírgula, para testes multidimensionais. O formato deve ser uma lista de valores separados por vírgula representando a matriz de covariância em formato linearizado (linha por linha). Por exemplo, para uma matriz 2x2: 'var1, cov12, var2'.",
+    )
+    prior = models.JSONField(
+        "Distribuição a Priori para Testes Multidimensionais",
+        max_length=255,
+        default=dict,
+        help_text="Distribuição a priori para testes multidimensionais. O formato deve ser um dicionário com 2^k chaves. Ex.: {'000': 0.1, '001': 0.1, '010': 0.1, '011': 0.1, '100': 0.1, '101': 0.1, '110': 0.1, '111': 0.3} para um teste com 3 dimensões.",
+    )
 
     class Meta:
         abstract = True
