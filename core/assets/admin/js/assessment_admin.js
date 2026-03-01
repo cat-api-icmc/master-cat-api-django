@@ -156,6 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
   criteria_select.addEventListener("change", (event) => {
     const selected_criteria = event.target.value;
     toogle_weight_fields(selected_criteria);
+    toogle_kl_delta_field(selected_criteria);
   });
 
   const initial_type = type_select.value;
@@ -164,4 +165,5 @@ document.addEventListener("DOMContentLoaded", () => {
   populate_criteria_options(initial_type);
   toggle_model_fields(initial_type);
   toogle_weight_fields(initial_criteria);
+  toogle_kl_delta_field(initial_criteria);
 });
