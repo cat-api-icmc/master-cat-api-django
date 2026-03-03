@@ -30,5 +30,5 @@ docker compose build --no-cache && docker compose up -d
 To deploy the project to production, use the following command:
 
 ```bash
-docker compose build --no-cache && docker push brunosilvestre00/django-cat-api
+docker compose build --no-cache && docker push catapiicmc/django-cat-api
 ```

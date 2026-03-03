@@ -3,12 +3,12 @@
 Esta aplicação é composta por dois projetos:
 
 - **Servidor Django (Python 3.12)**: 
-[https://github.com/BrunoSilvestre00/master-cat-api-django](https://github.com/BrunoSilvestre00/master-cat-api-django)
+[https://github.com/cat-api-icmc/master-cat-api-django](https://github.com/cat-api-icmc/master-cat-api-django)
 Esta parte da aplicação é responsável por fornecer uma API RESTful para o cliente. Ele lida com a lógica de negócios, manipulação de dados e comunicação com o banco de dados.
 Além disso, ele também é responsável pelo gerenciamento de usuário e possui um painel administrativo para facilitar a administração do sistema.
 
 - **Servidor Plumber (R)**: 
-[https://github.com/BrunoSilvestre00/master-cat-api-plumber](https://github.com/BrunoSilvestre00/master-cat-api-plumber)
+[https://github.com/cat-api-icmc/master-cat-api-plumber](https://github.com/cat-api-icmc/master-cat-api-plumber)
 Esta parte da aplicação é responsável por fornecer uma API que realiza a manipulação de dados das avaliações além de possuir toda a lógica de **Testes adaptativos (CAT)**.
 
 Ambos os projetos são executados em contêineres Docker, o que facilita a configuração e o gerenciamento do ambiente de desenvolvimento. Os dois projetos se comunicam entre si por uma network Docker chamada `cat-api`.

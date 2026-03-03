@@ -1,7 +1,7 @@
 services:
   django-api:
     build: .
-    image: brunosilvestre00/django-cat-api
+    image: catapiicmc/django-cat-api
     volumes:
       - .:/app
     ports:
