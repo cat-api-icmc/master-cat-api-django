@@ -9,3 +9,4 @@ Untitled*
 *.sqlite3
 /media
 /scripts
+/.env
