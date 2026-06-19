@@ -472,6 +472,10 @@ class AssessmentConfig(models.Model):
     @property
     def threshold_value(self) -> Union[List[float], float]:
         return self.__get_number_or_list(self.threshold)
+    
+    @property
+    def theta_range_values(self) -> List[float]:
+        return list(map(float, self.theta_range.split(",")))
 
     @property
     def exposure_values_list(self) -> List[Union[float, int]]:

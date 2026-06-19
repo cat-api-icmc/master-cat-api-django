@@ -232,6 +232,7 @@ class AssessmentConfigSerializer(serializers.ModelSerializer):
     model_type = serializers.CharField(source="type")
     criteria = serializers.SerializerMethodField()
     shadow_test_config = ShadowTestConfigSerializer(many=True, read_only=True)
+    theta_range = serializers.ListField(read_only=True, source="theta_range_values")
 
     class Meta:
         model = Assessment

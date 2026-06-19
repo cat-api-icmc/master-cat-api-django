@@ -60,12 +60,18 @@ class BaseClient(object):
         headers = {"x-api-key": self.auth.get("token")}
         url = f"{self.base_url}/{endpoint}"
 
-        session = requests.Session()
-        response = session.request(
-            method, url, headers=headers, params=query, json=body
-        )
+        try:
+            session = requests.Session()
+            response = session.request(
+                method, url, headers=headers, params=query, json=body
+            )
+        except requests.RequestException as e:
+            response = requests.Response()
+            response.status_code = 500
+            response._content = json.dumps({"message": f"Request failed: {e}"}).encode("utf-8")
 
         if _PLUMBER_LOG:
             self.__save_request_log(url, method, response, headers, query, body)
-
+            
+        response.raise_for_status()
         return response
