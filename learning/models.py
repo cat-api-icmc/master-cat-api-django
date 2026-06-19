@@ -428,12 +428,14 @@ class AssessmentConfig(models.Model):
         "Médias Latentes",
         max_length=255,
         default=list,
+        blank=True,
         help_text="Lista de médias latentes, separados por vírgula.",
     )
     latent_covariances = models.JSONField(
         "Covariâncias Latentes",
         max_length=255,
         default=list,
+        blank=True,
         help_text="Lista de covariâncias latentes, separados por vírgula. O formato deve ser uma lista de valores separados por vírgula representando a matriz de covariância em formato linearizado (linha por linha). Por exemplo, para uma matriz 2x2: 'var1, cov12, var2'.",
     )
     prior = models.JSONField(
