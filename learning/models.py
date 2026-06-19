@@ -567,7 +567,7 @@ class ShadowTestConfig(SoftDeletableModel):
         "Query de Itens",
         max_length=255,
         default="",
-        help_text="Query para seleção de itens para o teste sombra.",
+        help_text="Lista de índices de questões separados por vírgula, com suporte a intervalos usando dois pontos. Ex.: 1,5,6 ou 1,3:7,9. Use ALL para aplicar a restrição a todos os índices.",
     )
     operator = models.CharField(
         "Operador de Comparação",

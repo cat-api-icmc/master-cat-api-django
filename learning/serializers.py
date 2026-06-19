@@ -1,12 +1,38 @@
 from rest_framework import serializers
 from learning.models import (
-    AssessmentConfig,
     AssessmentType,
     CriteriaTypes,
     Question,
     Alternative,
     Assessment,
     QuestionParams,
+    ShadowTestConfig,
+)
+
+
+ASSESSMENT_CONFIG_FIELD_NAMES = (
+    "type",
+    "start_item",
+    "criteria",
+    "method",
+    "thetas_start",
+    "min_sem",
+    "delta_thetas",
+    "threshold",
+    "min_items",
+    "max_items",
+    "max_time",
+    "exposure_control",
+    "exposure_values",
+    "quadpts",
+    "theta_range",
+    "weights",
+    "latent_means",
+    "latent_covariances",
+    "prior",
+    "kl_delta",
+    "model_type",
+    "shadow_test_config"
 )
 
 
@@ -189,6 +215,15 @@ class AssessmentSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "fixed_question_count")
 
 
+class ShadowTestConfigSerializer(serializers.ModelSerializer):
+    query = serializers.CharField(source="itens_query", read_only=True)
+    op = serializers.CharField(source="operator", read_only=True)
+
+    class Meta:
+        model = ShadowTestConfig
+        fields = ("query", "op", "value")
+
+
 class AssessmentConfigSerializer(serializers.ModelSerializer):
     start_item = serializers.SerializerMethodField()
     min_sem = serializers.SerializerMethodField()
@@ -196,36 +231,32 @@ class AssessmentConfigSerializer(serializers.ModelSerializer):
     thetas_start = serializers.SerializerMethodField()
     model_type = serializers.CharField(source="type")
     criteria = serializers.SerializerMethodField()
+    shadow_test_config = ShadowTestConfigSerializer(many=True, read_only=True)
 
     class Meta:
         model = Assessment
-        fields = tuple(
-            [field.name for field in AssessmentConfig._meta.fields] + ["model_type"]
-        )
+        fields = ASSESSMENT_CONFIG_FIELD_NAMES
 
     def get_criteria(self, obj):
         return CriteriaTypes.KL if obj.criteria == CriteriaTypes.CDMKL else obj.criteria
 
-    def get_start_item(self, obj: AssessmentConfig):
+    def get_start_item(self, obj):
         return obj.start_item or self.get_criteria(obj)
 
-    def get_min_sem(self, obj: AssessmentConfig):
+    def get_min_sem(self, obj):
         return obj.min_sem_value
 
-    def get_delta_thetas(self, obj: AssessmentConfig):
+    def get_delta_thetas(self, obj):
         return obj.delta_thetas_value
 
-    def get_thetas_start(self, obj: AssessmentConfig):
+    def get_thetas_start(self, obj):
         return obj.thetas_start_value
-
 
 class IRTAssessmentConfigSerializer(AssessmentConfigSerializer):
 
     class Meta:
         model = Assessment
-        fields = tuple(
-            [field.name for field in AssessmentConfig._meta.fields] + ["model_type"]
-        )
+        fields = ASSESSMENT_CONFIG_FIELD_NAMES
 
 
 class CDMAssessmentConfigSerializer(AssessmentConfigSerializer):
@@ -233,10 +264,7 @@ class CDMAssessmentConfigSerializer(AssessmentConfigSerializer):
 
     class Meta:
         model = Assessment
-        fields = tuple(
-            [field.name for field in AssessmentConfig._meta.fields]
-            + ["model_type", "threshold"]
-        )
+        fields = ASSESSMENT_CONFIG_FIELD_NAMES + ("threshold",)
 
-    def get_threshold(self, obj: AssessmentConfig):
+    def get_threshold(self, obj):
         return obj.threshold_value
