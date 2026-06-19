@@ -108,14 +108,16 @@ const toogle_weight_fields = (criteria) => {
     "Arule",
     "APrule",
   ].includes(criteria);
-  document.getElementsByClassName("field-weights")[0].style.display =
-    shouldShowWeights ? "block" : "none";
+  const weightsField = document.getElementsByClassName("field-weights")[0];
+  const hasErrors = weightsField.querySelectorAll("ul.errorlist, div.errors").length > 0;
+  weightsField.style.display = shouldShowWeights || hasErrors ? "block" : "none";
 };
 
 const toogle_kl_delta_field = (criteria) => {
   const shouldShowKlDelta = ["KLn", "IKLn", "IKLPn"].includes(criteria);
-  document.getElementsByClassName("field-kl_delta")[0].style.display =
-    shouldShowKlDelta ? "block" : "none";
+  const klDeltaField = document.getElementsByClassName("field-kl_delta")[0];
+  const hasErrors = klDeltaField.querySelectorAll("ul.errorlist, div.errors").length > 0;
+  klDeltaField.style.display = shouldShowKlDelta || hasErrors ? "block" : "none";
 };
 
 const toggle_model_fields = (model) => {
@@ -161,6 +163,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const initial_type = type_select.value;
   const initial_criteria = criteria_select.value;
+  const errorFields = document.querySelectorAll(".form-row ul.errorlist, .form-row div.errors");
+
+  errorFields.forEach((errorNode) => {
+    const fieldRow = errorNode.closest(".form-row");
+    if (fieldRow) {
+      fieldRow.style.display = "block";
+    }
+  });
 
   populate_criteria_options(initial_type);
   toggle_model_fields(initial_type);

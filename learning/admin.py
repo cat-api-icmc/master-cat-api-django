@@ -1,5 +1,9 @@
+import logging
+
 from django.contrib import admin
-from django.utils.safestring import mark_safe
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
+from django.utils.html import format_html
 
 from learning.forms import (
     AssessmentForm,
@@ -20,6 +24,9 @@ from learning.models import (
     ShadowTestConfig,
 )
 from user.models import UserPoolHasAssessment
+
+
+logger = logging.getLogger(__name__)
 
 
 @admin.register(QuestionTag)
@@ -54,7 +61,7 @@ class QuestionAdmin(admin.ModelAdmin):
         ("Conteúdo", {"fields": ("statement",)}),
     )
 
-    def create_pool(self, request, queryset):
+    def create_pool(self, _request, queryset):
         QuestionPoolService.create_pool(queryset)
 
     create_pool.short_description = "Criar Banco de Questões"
@@ -178,13 +185,80 @@ class AssessmentAdmin(admin.ModelAdmin):
     class Media:
         js = ("admin/js/assessment_admin.js",)
 
-    @mark_safe
+    def save_model(self, request, obj, form, change):
+        try:
+            super().save_model(request, obj, form, change)
+        except (ValidationError, IntegrityError) as exc:
+            logger.exception(
+                "AssessmentAdmin.save_model failed: assessment_id=%s, name=%r, change=%s, exception=%s, form_errors=%s, non_field_errors=%s",
+                getattr(obj, "pk", None),
+                getattr(obj, "name", None),
+                change,
+                exc,
+                form.errors.as_json() if hasattr(form, "errors") else None,
+                list(form.errors.get("__all__", [])) if hasattr(form, "errors") else None,
+            )
+            raise
+        except Exception as exc:  # noqa: BLE001
+            logger.exception(
+                "AssessmentAdmin.save_model unexpected failure: assessment_id=%s, name=%r, change=%s, exception=%s, form_errors=%s, non_field_errors=%s",
+                getattr(obj, "pk", None),
+                getattr(obj, "name", None),
+                change,
+                exc,
+                form.errors.as_json() if hasattr(form, "errors") else None,
+                list(form.errors.get("__all__", [])) if hasattr(form, "errors") else None,
+            )
+            raise
+
+    def save_related(self, request, form, formsets, change):
+        try:
+            super().save_related(request, form, formsets, change)
+        except (ValidationError, IntegrityError) as exc:
+            logger.exception(
+                "AssessmentAdmin.save_related failed: assessment_id=%s, name=%r, change=%s, exception=%s, form_errors=%s, non_field_errors=%s",
+                getattr(form.instance, "pk", None),
+                getattr(form.instance, "name", None),
+                change,
+                exc,
+                form.errors.as_json() if hasattr(form, "errors") else None,
+                list(form.errors.get("__all__", [])) if hasattr(form, "errors") else None,
+            )
+            for formset in formsets:
+                non_form_errors = getattr(formset, "non_form_errors", None)
+                non_form_errors = list(non_form_errors()) if callable(non_form_errors) else None
+                logger.error(
+                    "AssessmentAdmin.related formset state: formset=%s, errors=%s, non_form_errors=%s",
+                    formset.__class__.__name__,
+                    getattr(formset, "errors", None),
+                    non_form_errors,
+                )
+            raise
+        except Exception as exc:  # noqa: BLE001
+            logger.exception(
+                "AssessmentAdmin.save_related unexpected failure: assessment_id=%s, name=%r, change=%s, exception=%s, form_errors=%s, non_field_errors=%s",
+                getattr(form.instance, "pk", None),
+                getattr(form.instance, "name", None),
+                change,
+                exc,
+                form.errors.as_json() if hasattr(form, "errors") else None,
+                list(form.errors.get("__all__", [])) if hasattr(form, "errors") else None,
+            )
+            for formset in formsets:
+                non_form_errors = getattr(formset, "non_form_errors", None)
+                non_form_errors = list(non_form_errors()) if callable(non_form_errors) else None
+                logger.error(
+                    "AssessmentAdmin.related formset state: formset=%s, errors=%s, non_form_errors=%s",
+                    formset.__class__.__name__,
+                    getattr(formset, "errors", None),
+                    non_form_errors,
+                )
+            raise
+
     def dashboards(self, obj):
-        return f"""
-            <div>
-                <a href="/data/assessment/{obj.uuid}/result" target="_blank">Resultados</a>
-            </div>
-        """
+        return format_html(
+            '<div><a href="/data/assessment/{}/result" target="_blank">Resultados</a></div>',
+            obj.uuid,
+        )
 
     dashboards.short_description = "Dashboards"
-    dashboards.allow_tags = True
