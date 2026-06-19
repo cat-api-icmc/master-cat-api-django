@@ -421,9 +421,9 @@ class AssessmentConfig(models.Model):
     weights = models.JSONField(
         "Pesos para Critérios de Seleção de Itens",
         default=list,
+        blank=True,
         help_text="Lista de pesos, separados por vírgula, para critérios de seleção de itens.",
-    )
-    
+    )    
     latent_means = models.JSONField(
         "Médias Latentes",
         max_length=255,
