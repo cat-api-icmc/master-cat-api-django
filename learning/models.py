@@ -436,7 +436,7 @@ class AssessmentConfig(models.Model):
         max_length=255,
         default=list,
         blank=True,
-        help_text="Lista de covariâncias latentes, separados por vírgula. O formato deve ser uma lista de valores separados por vírgula representando a matriz de covariância em formato linearizado (linha por linha). Por exemplo, para uma matriz 2x2: 'var1, cov12, var2'.",
+        help_text="Matriz de covariância entre as dimensões latentes do teste. Informe os valores em formato linearizado, linha por linha, separados por vírgula. Os valores da diagonal são as variâncias e os demais são as covariâncias entre as dimensões. Exemplos: 2x2 -> var1,cov12,var2; 3x3 -> var1,cov12,cov13,var2,cov23,var3.",
     )
     prior = models.JSONField(
         "Distribuição a Priori",

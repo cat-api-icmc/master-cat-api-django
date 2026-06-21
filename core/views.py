@@ -1,8 +1,13 @@
+from django.views.generic import TemplateView
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db import connections, utils
 from plumber.client import PlumberClient
+
+
+class HomeView(TemplateView):
+    template_name = "home.html"
 
 
 class HealthCheck(viewsets.GenericViewSet):
