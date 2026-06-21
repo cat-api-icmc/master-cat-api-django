@@ -3,195 +3,288 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Master Cat API</title>
+    <title>CAT API</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
       :root {
-        --bg: #07111f;
-        --bg-2: #0d1b2e;
-        --card: rgba(10, 20, 35, 0.72);
-        --border: rgba(173, 216, 230, 0.18);
-        --text: #eef4ff;
-        --muted: #b6c4dd;
-        --accent: #63d2ff;
-        --accent-2: #8b5cf6;
+        --bg: #0f172a;
+        --card: rgba(255, 255, 255, 0.05);
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --primary: #2563eb;
+        --primary-hover: #1d4ed8;
+        --accent: #22c55e;
       }
 
       * {
+        margin: 0;
+        padding: 0;
         box-sizing: border-box;
       }
 
-      html,
       body {
-        margin: 0;
-        min-height: 100%;
-      }
-
-      body {
-        font-family: Inter, "Segoe UI", Arial, sans-serif;
+        font-family: "Inter", sans-serif;
         color: var(--text);
         background:
-          radial-gradient(circle at top left, rgba(99, 210, 255, 0.28), transparent 28%),
-          radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.22), transparent 26%),
-          linear-gradient(135deg, var(--bg), var(--bg-2));
-      }
-
-      .page {
+          radial-gradient(
+            circle at top left,
+            rgba(37, 99, 235, 0.18),
+            transparent 35%
+          ),
+          radial-gradient(
+            circle at top right,
+            rgba(34, 197, 94, 0.12),
+            transparent 30%
+          ),
+          var(--bg);
         min-height: 100vh;
-        display: grid;
-        place-items: center;
-        padding: 24px;
       }
 
-      .card {
-        width: min(920px, 100%);
-        padding: 40px;
-        border: 1px solid var(--border);
-        border-radius: 28px;
-        background: var(--card);
-        backdrop-filter: blur(18px);
-        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      .container {
+        width: min(1200px, 92%);
+        margin: 0 auto;
+      }
+
+      .hero {
+        padding: 100px 0 80px;
+        text-align: center;
       }
 
       .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 16px;
+        display: inline-block;
+        padding: 8px 14px;
         border-radius: 999px;
         border: 1px solid var(--border);
         background: rgba(255, 255, 255, 0.04);
         color: var(--muted);
-        font-size: 0.92rem;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-      }
-
-      .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--accent), var(--accent-2));
-        box-shadow: 0 0 18px rgba(99, 210, 255, 0.65);
+        font-size: 0.85rem;
+        margin-bottom: 24px;
       }
 
       h1 {
-        margin: 22px 0 16px;
-        font-size: clamp(2.5rem, 6vw, 5rem);
-        line-height: 0.98;
-        letter-spacing: -0.05em;
+        font-size: clamp(3rem, 7vw, 4rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin-bottom: 20px;
       }
 
-      p {
-        margin: 0;
-        max-width: 62ch;
+      .subtitle {
+        max-width: 900px;
+        margin: 0 auto;
         color: var(--muted);
-        font-size: 1.08rem;
-        line-height: 1.7;
+        font-size: 1.15rem;
+        line-height: 1.9;
       }
 
-      .actions {
-        margin-top: 28px;
+      .hero-actions {
+        margin-top: 40px;
         display: flex;
-        flex-wrap: wrap;
-        gap: 14px;
-      }
-
-      .button {
-        display: inline-flex;
-        align-items: center;
         justify-content: center;
-        min-height: 52px;
-        padding: 0 22px;
-        border-radius: 999px;
-        text-decoration: none;
-        font-weight: 700;
-        transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
-      }
-
-      .button:hover {
-        transform: translateY(-1px);
-      }
-
-      .button-primary {
-        color: #09131f;
-        background: linear-gradient(135deg, var(--accent), #a8f3ff);
-        box-shadow: 0 14px 32px rgba(99, 210, 255, 0.28);
-      }
-
-      .button-secondary {
-        color: var(--text);
-        border: 1px solid var(--border);
-        background: rgba(255, 255, 255, 0.04);
-      }
-
-      .info-grid {
-        margin-top: 32px;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        flex-wrap: wrap;
         gap: 16px;
       }
 
-      .info {
-        padding: 18px;
-        border-radius: 20px;
-        border: 1px solid var(--border);
-        background: rgba(255, 255, 255, 0.03);
+      .btn {
+        text-decoration: none;
+        padding: 14px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: 0.2s ease;
       }
 
-      .info strong {
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-hover);
+        transform: translateY(-2px);
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 80px;
+      }
+
+      .card {
+        background: var(--card);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 28px;
+        transition: 0.25s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(37, 99, 235, 0.35);
+      }
+
+      .card-icon {
+        font-size: 2rem;
+        margin-bottom: 16px;
+      }
+
+      .card h2 {
+        margin-bottom: 12px;
+        font-size: 1.2rem;
+      }
+
+      .card p {
+        color: var(--muted);
+        line-height: 1.8;
+        margin-bottom: 20px;
+      }
+
+      .card a {
+        color: #60a5fa;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .section {
+        margin-bottom: 80px;
+      }
+
+      .section h2 {
+        font-size: 2rem;
+        margin-bottom: 24px;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 18px;
+      }
+
+      .feature {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px;
+      }
+
+      .feature strong {
         display: block;
         margin-bottom: 8px;
-        font-size: 1rem;
+        color: white;
       }
 
-      .info span {
+      .feature span {
         color: var(--muted);
-        line-height: 1.6;
+        line-height: 1.7;
       }
 
-      @media (max-width: 720px) {
-        .card {
-          padding: 24px;
-          border-radius: 22px;
-        }
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 12px 20px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.85rem;
+        background: rgba(255, 255, 255, 0.02);
+      }
 
-        .info-grid {
-          grid-template-columns: 1fr;
-        }
+      footer strong {
+        color: var(--text);
       }
     </style>
   </head>
+
   <body>
-    <main class="page">
-      <section class="card">
-        <div class="badge"><span class="dot"></span> Master Cat API</div>
-        <h1>Uma base limpa para a sua API Django.</h1>
-        <p>
-          Esta home foi criada para substituir o 404 da raiz e oferecer um ponto de entrada
-          visual para o projeto. Use o botão abaixo para acessar o painel administrativo e
-          continuar a gestão da aplicação.
+    <section class="hero">
+      <div class="container">
+        <div class="badge">
+          Plataforma para Testes Adaptativos Computadorizados
+        </div>
+
+        <h1>CAT API</h1>
+
+        <p class="subtitle">
+          Plataforma para Testes Adaptativos Computadorizados (TAC), com suporte
+          à Teoria de Resposta ao Item (TRI) e Modelos de Diagnóstico Cognitivo
+          (MDC). Desenvolvida para pesquisa, avaliação educacional e integração
+          via API.
         </p>
 
-        <div class="actions">
-          <a class="button button-primary" href="/admin/">Ir para o admin</a>
-          <a class="button button-secondary" href="/__docs__/">Ver documentação</a>
+        <div class="hero-actions">
+          <a href="/admin/" class="btn btn-primary">Painel Administrativo</a>
+          <a href="/swagger/" class="btn btn-secondary">Documentação da API</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="container">
+      <section class="cards">
+        <div class="card">
+          <div class="card-icon">📘</div>
+          <h2>Swagger</h2>
+          <p>
+            Explore os endpoints da API e seus esquemas de forma interativa.
+          </p>
+          <a href="/swagger/">Abrir documentação →</a>
         </div>
 
-        <div class="info-grid">
-          <article class="info">
-            <strong>API REST</strong>
-            <span>Endpoints organizados para consumo interno e integração com o front.</span>
-          </article>
-          <article class="info">
-            <strong>Painel Admin</strong>
-            <span>Gerencie modelos, uploads e processos pelo console do Django.</span>
-          </article>
-          <article class="info">
-            <strong>Documentação</strong>
-            <span>Acesse a documentação Swagger para explorar a superfície da API.</span>
-          </article>
+        <div class="card">
+          <div class="card-icon">⚙️</div>
+          <h2>Admin</h2>
+          <p>Gerencie itens, testes, parâmetros psicométricos e usuários.</p>
+          <a href="/admin/">Acessar painel →</a>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">💻</div>
+          <h2>Repositório</h2>
+          <p>Código-fonte e arquitetura do sistema CAT API.</p>
+          <a
+            href="https://github.com/cat-api-icmc/master-cat-api"
+            target="_blank"
+          >
+            Ver GitHub →
+          </a>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🎓</div>
+          <h2>Dissertação</h2>
+          <p>
+            Trabalho de mestrado associado ao desenvolvimento da plataforma.
+          </p>
+          <a
+            href="https://drive.google.com/file/d/11hoGpRHbuZn6gRuxmgRfUnmf3s3usmA9/view?usp=sharing"
+            target="_blank"
+          >
+            Abrir dissertação →
+          </a>
         </div>
       </section>
-    </main>
+    </div>
+
+    <footer>
+      Criado por <strong>Bruno Ap. Silvestre</strong> e
+      <strong>Thiago F. Miranda</strong> • Instituto de Ciências Matemáticas e
+      de Computação (ICMC-USP) • © 2026 CAT API
+    </footer>
   </body>
 </html>
