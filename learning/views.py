@@ -1,9 +1,9 @@
-from turtle import st
-
 import arrow
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from core.permissions import HasAPIAccess
 from plumber.client import PlumberClient
 from user.models import UserPoolHasUser
@@ -21,6 +21,70 @@ from learning.services import QuestionPoolService, UserAssessmentService
 from learning.repositories import AssessmentRepository
 
 
+QUESTION_ALT_SCHEMA = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        "id": openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_UUID),
+        "text": openapi.Schema(type=openapi.TYPE_STRING),
+    },
+)
+
+QUESTION_SCHEMA = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        "id": openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_UUID),
+        "statement": openapi.Schema(type=openapi.TYPE_STRING),
+        "alternatives": openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=QUESTION_ALT_SCHEMA,
+        ),
+    },
+)
+
+USER_ASSESSMENT_REQUEST_SCHEMA = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=["assessment"],
+    properties={
+        "assessment": openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_UUID),
+    },
+)
+
+USER_ANSWER_REQUEST_SCHEMA = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=["alternative"],
+    properties={
+        "alternative": openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_UUID),
+    },
+)
+
+USER_ASSESSMENT_FLOW_SCHEMA = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        "user_assessment": openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_UUID),
+        "status": openapi.Schema(type=openapi.TYPE_STRING),
+        "in_progress": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+        "next_question": QUESTION_SCHEMA,
+        "id": openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_UUID),
+        "name": openapi.Schema(type=openapi.TYPE_STRING),
+        "fixed_question_count": openapi.Schema(type=openapi.TYPE_INTEGER),
+    },
+)
+
+ERROR_RESPONSE_SCHEMA = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        "error": openapi.Schema(type=openapi.TYPE_STRING),
+    },
+)
+
+MESSAGE_RESPONSE_SCHEMA = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        "message": openapi.Schema(type=openapi.TYPE_STRING),
+    },
+)
+
+
 class AssessmentViewset(viewsets.ModelViewSet):
     serializer_class = AssessmentSerializer
     permission_classes = [HasAPIAccess]
@@ -29,11 +93,27 @@ class AssessmentViewset(viewsets.ModelViewSet):
     def get_queryset(self):
         return AssessmentRepository.get_active_assessments()
 
+    @swagger_auto_schema(
+        operation_summary="Lista as avaliações do usuário",
+        tags=["Assessments"],
+        responses={
+            200: AssessmentSerializer(many=True),
+            403: openapi.Response("Acesso negado", ERROR_RESPONSE_SCHEMA),
+        },
+    )
     def list(self, request, *args, **kwargs):
         qs = AssessmentRepository.get_user_assessments(request.user)
         data = AssessmentSerializer(qs, many=True).data
         return Response(data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        operation_summary="Detalha uma avaliação do usuário",
+        tags=["Assessments"],
+        responses={
+            200: AssessmentSerializer,
+            404: openapi.Response("Avaliação não encontrada", ERROR_RESPONSE_SCHEMA),
+        },
+    )
     def retrieve(self, request, *args, **kwargs):
         if assessment := AssessmentRepository.get_user_assessment(
             request.user, kwargs["uuid"]
@@ -44,13 +124,26 @@ class AssessmentViewset(viewsets.ModelViewSet):
 
 
 class UserAssessmentViewset(viewsets.ModelViewSet):
-    serializer_class = None
+    serializer_class = AssessmentSerializer
     permission_classes = [HasAPIAccess]
     lookup_field = "uuid"
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return UserAssessment.objects.none()
         return UserAssessment.objects.filter(user_id=self.request.user.id)
 
+    @swagger_auto_schema(
+        operation_summary="Cria ou retoma uma avaliação do usuário",
+        tags=["User Assessments"],
+        request_body=USER_ASSESSMENT_REQUEST_SCHEMA,
+        responses={
+            200: openapi.Response("Avaliação retomada", USER_ASSESSMENT_FLOW_SCHEMA),
+            201: openapi.Response("Avaliação criada", USER_ASSESSMENT_FLOW_SCHEMA),
+            403: openapi.Response("Usuário não matriculado", ERROR_RESPONSE_SCHEMA),
+            404: openapi.Response("Avaliação não encontrada", ERROR_RESPONSE_SCHEMA),
+        },
+    )
     def create(self, request, *args, **kwargs):
         assessment = Assessment.objects.filter(
             uuid=request.data.get("assessment")
@@ -102,6 +195,15 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
             data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
         )
 
+    @swagger_auto_schema(
+        operation_summary="Processa a resposta do usuário e avança a avaliação",
+        tags=["User Assessments"],
+        request_body=USER_ANSWER_REQUEST_SCHEMA,
+        responses={
+            200: openapi.Response("Resposta processada", USER_ASSESSMENT_FLOW_SCHEMA),
+            404: openapi.Response("Avaliação ou alternativa não encontrada", ERROR_RESPONSE_SCHEMA),
+        },
+    )
     def update(self, request, *args, **kwargs):
         payload = request.data.copy()
 
@@ -188,7 +290,16 @@ class UserAssessmentViewset(viewsets.ModelViewSet):
         url_path="force-complete",
         url_name="force-complete",
     )
-    def force_complete(self, request, uuid=None, **kwargs):
+    @swagger_auto_schema(
+        operation_summary="Finaliza uma avaliação manualmente",
+        tags=["User Assessments"],
+        responses={
+            200: openapi.Response("Avaliação finalizada", MESSAGE_RESPONSE_SCHEMA),
+            400: openapi.Response("Avaliação já finalizada", ERROR_RESPONSE_SCHEMA),
+            404: openapi.Response("Avaliação não encontrada", ERROR_RESPONSE_SCHEMA),
+        },
+    )
+    def force_complete(self, _request, uuid=None, **_kwargs):
         user_assessment = UserAssessment.objects.filter(uuid=uuid).first()
         if not user_assessment:
             return Response(
